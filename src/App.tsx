@@ -2,6 +2,7 @@ import Sidebar from './components/layout/Sidebar';
 import Dashboard from './components/Dashboard';
 import Information from './components/Information';
 import { useSelector } from 'react-redux';
+import Login from './components/Auth/Login';
 
 const ShepherdsToolkit = () => {
  
@@ -18,6 +19,8 @@ const ShepherdsToolkit = () => {
           {
             (() => {
               switch(activeModule) {
+                case 'login':
+                  return <Login />;
                 case 'dashboard':
                   return <Dashboard />;
                 case 'information':

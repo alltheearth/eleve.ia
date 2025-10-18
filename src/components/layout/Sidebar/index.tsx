@@ -54,6 +54,7 @@ const Sidebar: FC = () => {
   const handleLogout = (): void => {
     // Implementar lógica de logout aqui
     console.log("Logout clicked");
+    dispatch(setActiveModule("login"));
   };
 
   return (
