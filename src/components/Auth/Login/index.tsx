@@ -1,7 +1,15 @@
 import  { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Building2, ArrowRight, CheckCircle } from 'lucide-react';
+import { loginUser } from '../../../Feature/AuthSlice';
+import { setActiveModule } from '../../../Feature/ModuleActiveSlice';
+import { validateForm, validators } from '../../../utils/validators';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '../../../store';
 
 export default function Login() {
+
+  const dispatch = useDispatch<AppDispatch>();
+
   const [telaAtual, setTelaAtual] = useState('login');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [mostrarSenhaConfirm, setMostrarSenhaConfirm] = useState(false);
@@ -25,26 +33,36 @@ export default function Login() {
     termo: false
   });
 
-  const [erroLogin, setErroLogin] = useState('');
+  const [erroLogin, setErroLogin] = useState("");
   const [erroRegistro, setErroRegistro] = useState('');
 
   // Handle Login
-  const handleLogin = () => {
-    setErroLogin('');
+// No componente Login, substitua handleLogin por:
+const handleLogin = async () => {
+  setErroLogin('');
+  
+  // Validação
+  const erros = validateForm(login, {
+    email: validators.email,
+    senha: validators.senha,
+  });
 
-    if (!login.email || !login.senha) {
-      setErroLogin('Por favor, preencha todos os campos');
-      return;
-    }
+  if (erros.length > 0) {
+    setErroLogin(erros[0].message);
+    return;
+  }
 
-    if (!login.email.includes('@')) {
-      setErroLogin('Email inválido');
-      return;
-    }
-
-    console.log('Login:', login);
-    alert('✅ Login realizado com sucesso!');
-  };
+  try {
+    const result = await dispatch(
+      loginUser({ email: login.email, senha: login.senha })
+    ).unwrap();
+    console.log('Login bem-sucedido:', result);
+    // Login bem-sucedido
+    dispatch(setActiveModule('dashboard'));
+  } catch (error) {
+    setErroLogin( 'Erro ao fazer login');
+  }
+};
 
   // Handle Registro
   const handleRegistro = () => {
