@@ -1,11 +1,12 @@
-// src/Feature/AuthSlice/index.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { authService} from "../../services/authService";
+import { authService, type LoginCredentials, type RegisterCredentials } from "../../services/authService";
 
 interface User {
-  id: string;
-  nome: string;
+  id: number;
+  username: string;
   email: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 interface AuthState {
@@ -18,15 +19,15 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('batata22_token'),
+  token: localStorage.getItem('eleve_token'),
   loading: false,
   error: null,
-  isAuthenticated: !!localStorage.getItem('batata22_token'),
+  isAuthenticated: !!localStorage.getItem('eleve_token'),
 };
 
 export const loginUser = createAsyncThunk(
   'auth/login',
-  async (credentials: { email: string; senha: string }, { rejectWithValue }) => {
+  async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
       return await authService.login(credentials);
     } catch (error: any) {
@@ -37,7 +38,7 @@ export const loginUser = createAsyncThunk(
 
 export const registerUser = createAsyncThunk(
   'auth/register',
-  async (userData: any, { rejectWithValue }) => {
+  async (userData: RegisterCredentials, { rejectWithValue }) => {
     try {
       return await authService.register(userData);
     } catch (error: any) {
@@ -54,6 +55,7 @@ const AuthSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      localStorage.removeItem('eleve_token');
     },
     clearError: (state) => {
       state.error = null;
@@ -70,10 +72,12 @@ const AuthSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
+      state.error = null;
     });
     builder.addCase(loginUser.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
+      state.isAuthenticated = false;
     });
 
     // Register
@@ -86,10 +90,12 @@ const AuthSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
+      state.error = null;
     });
     builder.addCase(registerUser.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
+      state.isAuthenticated = false;
     });
   },
 });
