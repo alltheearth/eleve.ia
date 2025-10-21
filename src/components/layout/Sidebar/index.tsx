@@ -15,6 +15,7 @@ import { useState, type FC, type JSX } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../../store";
 import { setActiveModule } from "../../../Feature/ModuleActiveSlice";
+import { logout } from "../../../Feature/AuthSlice";
 
 interface NavItemProps {
   icon: LucideIcon;
@@ -53,8 +54,7 @@ const Sidebar: FC = () => {
 
   const handleLogout = (): void => {
     // Implementar lógica de logout aqui
-    console.log("Logout clicked");
-    dispatch(setActiveModule("login"));
+    dispatch(logout());
   };
 
   return (

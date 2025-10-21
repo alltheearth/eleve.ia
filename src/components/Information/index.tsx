@@ -1,4 +1,7 @@
-import { useState, type ChangeEvent } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
+import { fetchSchools, selectSchools } from '../../Feature/SchoolSlice';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '../../store';
 
 interface FormData {
   nomeEscola: string;
@@ -62,6 +65,12 @@ interface InputFieldProps {
 
 
 export default function Information() {
+   const dispatch = useDispatch<AppDispatch>();
+   
+    useEffect(() => {
+    dispatch(fetchSchools());
+  }, []);
+
   const [abaSelecionada, setAbaSelecionada] = useState<string>('dados');
 
   const [formData, setFormData] = useState<FormData>({
