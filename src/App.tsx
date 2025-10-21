@@ -6,6 +6,9 @@ import Dashboard from './components/Dashboard';
 import Information from './components/Information';
 import Login from './components/Auth/Login';
 import { authService } from './services/authService';
+import Faqs from './components/Faqs';
+import Calendar from './components/Calendar';
+import Leads from './components/Leads';
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -39,6 +42,12 @@ function App() {
               return <Dashboard />;
             case 'information':
               return <Information />;
+            case 'faqs':
+              return <Faqs />;
+            case 'calendar':
+              return <Calendar />;
+            case 'leads':
+              return <Leads />
             default:
               return <Dashboard />;
           }

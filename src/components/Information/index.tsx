@@ -1,7 +1,11 @@
+// src/components/Information/index.tsx - Usando RTK Query
 import { useEffect, useState, type ChangeEvent } from 'react';
-import { fetchSchools, selectSchools } from '../../Feature/SchoolSlice';
-import { useDispatch } from 'react-redux';
-import type { AppDispatch } from '../../store';
+import { 
+  useGetSchoolsQuery, 
+  useUpdateSchoolMutation,
+} from '../../services/schoolApi';
+import { useGetFaqsQuery, useUpdateFaqMutation } from '../../services/faqsApi';
+import { useGetEventsQuery } from '../../services/eventsApi';
 
 interface FormData {
   nomeEscola: string;
@@ -63,35 +67,68 @@ interface InputFieldProps {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-
 export default function Information() {
-   const dispatch = useDispatch<AppDispatch>();
-   
-    useEffect(() => {
-    dispatch(fetchSchools());
-  }, []);
+  // ✅ USAR RTK QUERY ao invés de AsyncThunk
+  const { data: schoolsData, isLoading, error, refetch } = useGetSchoolsQuery();
+  const [updateSchool, { isLoading: isUpdating }] = useUpdateSchoolMutation();
+
+  const { data: events, isLoading: eventsisLoading, error: eventIs, refetch: eventRefetch } = useGetEventsQuery();
+  const [updateEvent, { isLoading: eventIsUpdating }] = useUpdateFaqMutation();
 
   const [abaSelecionada, setAbaSelecionada] = useState<string>('dados');
+  const [escolaAtualId, setEscolaAtualId] = useState<number | null>(null);
+  const [mensagemSucesso, setMensagemSucesso] = useState<string>('');
+  const [mensagemErro, setMensagemErro] = useState<string>('');
 
   const [formData, setFormData] = useState<FormData>({
-    nomeEscola: 'Colégio Exemplo',
-    cnpj: '12.345.678/0001-99',
-    telefone: '(11) 3000-0000',
-    email: 'contato@escola.com.br',
-    website: 'www.escola.com.br',
-    cep: '01310-100',
-    endereco: 'Rua das Flores, 123',
-    cidade: 'São Paulo',
-    estado: 'SP',
-    complemento: 'Próximo à estação',
-    sobre: 'Colégio com 25 anos de tradição em educação de qualidade...',
+    nomeEscola: '',
+    cnpj: '',
+    telefone: '',
+    email: '',
+    website: '',
+    cep: '',
+    endereco: '',
+    cidade: '',
+    estado: '',
+    complemento: '',
+    sobre: '',
     niveisEnsino: {
-      infantil: true,
-      fundamentoI: true,
+      infantil: false,
+      fundamentoI: false,
       fundamentoII: false,
       medio: false,
     }
   });
+
+  // ✅ CARREGAR DADOS DA ESCOLA QUANDO DISPONÍVEL
+  useEffect(() => {
+    if (schoolsData && schoolsData.results.length > 0) {
+      const escola = schoolsData.results[0]; // Pega primeira escola
+      setEscolaAtualId(escola.id);
+      
+      setFormData({
+        nomeEscola: escola.nome_escola || '',
+        cnpj: escola.cnpj || '',
+        telefone: escola.telefone || '',
+        email: escola.email || '',
+        website: escola.website || '',
+        cep: escola.cep || '',
+        endereco: escola.endereco || '',
+        cidade: escola.cidade || '',
+        estado: escola.estado || '',
+        complemento: escola.complemento || '',
+        sobre: escola.sobre || '',
+        niveisEnsino: {
+          infantil: escola.niveis_ensino?.niveis_ensino?.infantil || false,
+          fundamentoI: escola.niveis_ensino?.niveis_ensino?.fundamentoI || false,
+          fundamentoII: escola.niveis_ensino?.niveis_ensino?.fundamentoII || false,
+          medio: escola.niveis_ensino?.niveis_ensino?.medio || false,
+        }
+      });
+
+      console.log('✅ Dados da escola carregados:', escola);
+    }
+  }, [schoolsData]);
 
   const [calendarioEventos, setCalendarioEventos] = useState<CalendarioEvento[]>([
     { data: '15/02/2024', evento: 'Início do Letivo', tipo: '📌' },
@@ -101,12 +138,11 @@ export default function Information() {
 
   const [novoEvento, setNovoEvento] = useState<NovoEvento>({ data: '', evento: '', tipo: '📌' });
 
-  const [faqs, setFaqs] = useState<FAQ[]>([
-    { id: 1, pergunta: 'Como é feita a admissão?', categoria: 'Admissão', status: 'ativa' },
-    { id: 2, pergunta: 'Qual é o valor da mensalidade?', categoria: 'Valores', status: 'ativa' },
-    { id: 3, pergunta: 'Qual é o uniforme da escola?', categoria: 'Uniforme', status: 'ativa' }
-  ]);
-
+  // const [events, setFaqs] = useState<FAQ[]>([
+  //   { id: 1, pergunta: 'Como é feita a admissão?', categoria: 'Admissão', status: 'ativa' },
+  //   { id: 2, pergunta: 'Qual é o valor da mensalidade?', categoria: 'Valores', status: 'ativa' },
+  //   { id: 3, pergunta: 'Qual é o uniforme da escola?', categoria: 'Uniforme', status: 'ativa' }
+  // ]);
 
   const [contatos, setContatos] = useState<Contatos>({
     emailPrincipal: 'contato@escola.com.br',
@@ -138,6 +174,44 @@ export default function Information() {
     }));
   };
 
+  // ✅ SALVAR ALTERAÇÕES USANDO RTK QUERY MUTATION
+  const handleSalvarAlteracoes = async (): Promise<void> => {
+    if (!escolaAtualId) {
+      setMensagemErro('Nenhuma escola selecionada');
+      return;
+    }
+
+    try {
+      await updateSchool({
+        id: escolaAtualId,
+        data: {
+          nome_escola: formData.nomeEscola,
+          cnpj: formData.cnpj,
+          telefone: formData.telefone,
+          email: formData.email,
+          website: formData.website,
+          cep: formData.cep,
+          endereco: formData.endereco,
+          cidade: formData.cidade,
+          estado: formData.estado,
+          complemento: formData.complemento,
+          sobre: formData.sobre,
+          niveis_ensino: {
+            niveis_ensino: formData.niveisEnsino
+          }
+        }
+      }).unwrap();
+
+      setMensagemSucesso('✅ Dados salvos com sucesso!');
+      setMensagemErro('');
+      
+      setTimeout(() => setMensagemSucesso(''), 3000);
+    } catch (err: any) {
+      setMensagemErro(`❌ Erro ao salvar: ${err.data?.detail || err.message || 'Erro desconhecido'}`);
+      setMensagemSucesso('');
+    }
+  };
+
   const adicionarEvento = (): void => {
     if (novoEvento.data && novoEvento.evento) {
       setCalendarioEventos([...calendarioEventos, novoEvento]);
@@ -156,15 +230,59 @@ export default function Information() {
     }));
   };
 
+  // ✅ LOADING E ERROR STATES
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600 font-semibold">Carregando dados da escola...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg max-w-md">
+          <p className="font-bold">❌ Erro ao carregar dados</p>
+          <p className="text-sm mt-2">Não foi possível carregar os dados da escola.</p>
+          <button 
+            onClick={() => refetch()}
+            className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!schoolsData || schoolsData.results.length === 0) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-6 py-4 rounded-lg max-w-md text-center">
+          <p className="font-bold">⚠️ Nenhuma escola cadastrada</p>
+          <p className="text-sm mt-2">Você ainda não cadastrou nenhuma escola.</p>
+          <button className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+            Cadastrar Escola
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="bg-white shadow-sm p-6 flex justify-between items-center border-b border-gray-200">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Informações da Escola</h1>
-            <p className="text-sm text-gray-600">Gerencie todos os dados da sua instituição</p>
+            <p className="text-sm text-gray-600">
+              {formData.nomeEscola || 'Gerencie todos os dados da sua instituição'}
+            </p>
           </div>
           <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
             AD
@@ -175,12 +293,24 @@ export default function Information() {
         <main className="flex-1 overflow-auto p-6">
           <div className="max-w-6xl mx-auto space-y-6">
             
+            {/* Mensagens */}
+            {mensagemSucesso && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
+                {mensagemSucesso}
+              </div>
+            )}
+            
+            {mensagemErro && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+                {mensagemErro}
+              </div>
+            )}
+
             {/* Abas */}
             <div className="flex gap-2 bg-white p-2 rounded-lg shadow-md flex-wrap">
               {[
                 { id: 'dados', label: 'Dados Básicos' },
                 { id: 'calendario', label: 'Calendário Escolar' },
-                { id: 'faqs', label: 'FAQs' },
                 { id: 'contato', label: 'Contato' }
               ].map(aba => (
                 <button
@@ -309,8 +439,12 @@ export default function Information() {
                   </div>
                 </div>
 
-                <button className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold">
-                  Salvar Alterações
+                <button 
+                  onClick={handleSalvarAlteracoes}
+                  disabled={isUpdating}
+                  className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isUpdating ? 'Salvando...' : 'Salvar Alterações'}
                 </button>
               </div>
             )}
@@ -377,7 +511,7 @@ export default function Information() {
                       </tr>
                     </thead>
                     <tbody>
-                      {calendarioEventos.map((evento, index) => (
+                      {events?.results.map((evento, index) => (
                         <tr key={index} className="border-b hover:bg-gray-50 transition">
                           <td className="border border-gray-300 p-3">{evento.data}</td>
                           <td className="border border-gray-300 p-3">{evento.evento}</td>
@@ -390,54 +524,6 @@ export default function Information() {
                             >
                               Deletar
                             </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 3: FAQs */}
-            {abaSelecionada === 'faqs' && (
-              <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Perguntas Frequentes (FAQs)</h2>
-
-                <div className="flex gap-2 mb-4">
-                  <input 
-                    type="text" 
-                    placeholder="Buscar FAQs..." 
-                    className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-                  />
-                  <button onClick={() => setFaqs([])} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-semibold">
-                    + Nova FAQ
-                  </button>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-300 p-3 text-left font-bold">#</th>
-                        <th className="border border-gray-300 p-3 text-left font-bold">Pergunta</th>
-                        <th className="border border-gray-300 p-3 text-left font-bold">Categoria</th>
-                        <th className="border border-gray-300 p-3 text-left font-bold">Status</th>
-                        <th className="border border-gray-300 p-3 text-left font-bold">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {faqs.map((faq) => (
-                        <tr key={faq.id} className="border-b hover:bg-gray-50 transition">
-                          <td className="border border-gray-300 p-3">{faq.id}</td>
-                          <td className="border border-gray-300 p-3 font-medium">{faq.pergunta}</td>
-                          <td className="border border-gray-300 p-3">{faq.categoria}</td>
-                          <td className="border border-gray-300 p-3">
-                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">✅ Ativa</span>
-                          </td>
-                          <td className="border border-gray-300 p-3 flex gap-2">
-                            <button className="text-blue-600 hover:underline font-semibold text-sm">Editar</button>
-                            <button className="text-red-600 hover:underline font-semibold text-sm">Deletar</button>
                           </td>
                         </tr>
                       ))}
@@ -531,8 +617,6 @@ export default function Information() {
     </div>
   );
 }
-
-
 
 function InputField({
   label,
