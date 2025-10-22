@@ -44,12 +44,12 @@ const Sidebar: FC = () => {
     { id: "dashboard", label: "Dashboard", icon: Home },
     { id: "information", label: "Informações da Escola", icon: BookOpen },
     { id: 'calendar', label: 'Calendário Escolar', icon: Calendar},
-    {id: 'campaigns', label: 'Campanhas', icon: Goal},
-    { id: "documentos", label: "Documentos", icon: FileText },
+    // {id: 'campaigns', label: 'Campanhas', icon: Goal},
+    // { id: "documentos", label: "Documentos", icon: FileText },
     { id: "faqs", label: "FAQs", icon: MessageSquare },
     { id: "leads", label: "Leads", icon: Users },
-    { id: "configuracoes", label: "Configurações", icon: Settings },
-    { id: "analytics", label: "Analytics", icon: BarChart3 },
+    // { id: "configuracoes", label: "Configurações", icon: Settings },
+    // { id: "analytics", label: "Analytics", icon: BarChart3 },
   ];
 
   const handleNavClick = (moduleId: string): void => {
