@@ -11,6 +11,7 @@ import {
   Settings,
   BarChart3,
   Calendar,
+  Goal,
 } from "lucide-react";
 import { useState, type FC, type JSX } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -43,6 +44,7 @@ const Sidebar: FC = () => {
     { id: "dashboard", label: "Dashboard", icon: Home },
     { id: "information", label: "Informações da Escola", icon: BookOpen },
     { id: 'calendar', label: 'Calendário Escolar', icon: Calendar},
+    {id: 'campaigns', label: 'Campanhas', icon: Goal},
     { id: "documentos", label: "Documentos", icon: FileText },
     { id: "faqs", label: "FAQs", icon: MessageSquare },
     { id: "leads", label: "Leads", icon: Users },

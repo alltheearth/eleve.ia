@@ -9,6 +9,7 @@ const [updateEvent, { isLoading: eventIsUpdating }] = useUpdateFaqMutation();
 const [createEvent] = useCreateEventMutation();
 const [deleteEvent] = useDeleteEventMutation(); 
 const [novoEvento, setNovoEvento] = useState({
+    escola:'',
     data: '',
     evento: '',
     tipo: '📌',
@@ -21,9 +22,10 @@ const adicionarEvento = async () => {
     try {
     await createEvent(novoEvento).unwrap();
     alert('Evento adicionado com sucesso!');
-    setNovoEvento({ data: '', evento: '', tipo: '📌' });
+    setNovoEvento({escola: '1',  data: '', evento: '', tipo: '📌' });
     eventRefetch();
     } catch (error) {
+        console.log(novoEvento)
     console.error('Erro ao adicionar evento:', error);
     alert('Erro ao adicionar evento. Tente novamente.');
     }   
@@ -98,10 +100,10 @@ return (
                     onChange={(e) => setNovoEvento({...novoEvento, tipo: e.target.value})}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
                     >
-                    <option value="📌">📌 Feriado</option>
-                    <option value="📝">📝 Prova/Avaliação</option>
-                    <option value="🎓">🎓 Formatura</option>
-                    <option value="🎉">🎉 Evento Cultural</option>
+                    <option value="feriado">📌 Feriado</option>
+                    <option value="prova">📝 Prova/Avaliação</option>
+                    <option value="formatura">🎓 Formatura</option>
+                    <option value="evento_cultural">🎉 Evento Cultural</option>
                     </select>
                 </div>
                 </div>
