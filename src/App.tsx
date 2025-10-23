@@ -9,6 +9,7 @@ import { authService } from './services/authService';
 import Faqs from './components/Faqs';
 import Calendar from './components/Calendar';
 import Leads from './components/Leads';
+import Contacts from './components/Contacts';
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -47,7 +48,9 @@ function App() {
             case 'calendar':
               return <Calendar />;
             case 'leads':
-              return <Leads />
+              return <Leads />;
+              case 'contatos':
+              return <Contacts />; // Substitua por <Contacts /> quando o componente estiver disponível
             default:
               return <Dashboard />;
           }
