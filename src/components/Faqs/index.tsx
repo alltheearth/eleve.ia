@@ -1,6 +1,6 @@
 // src/components/Faqs/index.tsx
 import { useState, useEffect } from "react";
-import { useGetFaqsQuery, useCreateFaqMutation, useUpdateFaqMutation, useDeleteFaqMutation, type Faq } from "../../services/faqsApi";
+import { useGetFaqsQuery, useCreateFaqMutation, useUpdateFaqMutation, useDeleteFaqMutation, type Faqs } from "../../services/faqsApi";
 import { useCurrentSchool } from "../../hooks/useCurrentSchool";
 import { Trash2, Edit2, Plus, Save, X, MessageSquare, AlertCircle, School, Search } from 'lucide-react';
 

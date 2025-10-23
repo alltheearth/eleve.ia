@@ -4,8 +4,6 @@ import {
   useGetSchoolsQuery, 
   useUpdateSchoolMutation,
 } from '../../services/schoolApi';
-import { useGetFaqsQuery, useUpdateFaqMutation } from '../../services/faqsApi';
-import { useGetEventsQuery } from '../../services/eventsApi';
 
 interface FormData {
   nomeEscola: string;
@@ -27,18 +25,6 @@ interface FormData {
   };
 }
 
-interface CalendarioEvento {
-  data: string;
-  evento: string;
-  tipo: string;
-}
-
-interface FAQ {
-  id: number;
-  pergunta: string;
-  categoria: string;
-  status: string;
-}
 
 interface Contatos {
   emailPrincipal: string;
@@ -53,11 +39,6 @@ interface Contatos {
   emailCoordenador: string;
 }
 
-interface NovoEvento {
-  data: string;
-  evento: string;
-  tipo: string;
-}
 
 interface InputFieldProps {
   label: string;
@@ -71,9 +52,6 @@ export default function Information() {
   // ✅ USAR RTK QUERY ao invés de AsyncThunk
   const { data: schoolsData, isLoading, error, refetch } = useGetSchoolsQuery();
   const [updateSchool, { isLoading: isUpdating }] = useUpdateSchoolMutation();
-
-  const { data: events, isLoading: eventsisLoading, error: eventIs, refetch: eventRefetch } = useGetEventsQuery();
-  const [updateEvent, { isLoading: eventIsUpdating }] = useUpdateFaqMutation();
 
   const [abaSelecionada, setAbaSelecionada] = useState<string>('dados');
   const [escolaAtualId, setEscolaAtualId] = useState<number | null>(null);
@@ -130,19 +108,6 @@ export default function Information() {
     }
   }, [schoolsData]);
 
-  const [calendarioEventos, setCalendarioEventos] = useState<CalendarioEvento[]>([
-    { data: '15/02/2024', evento: 'Início do Letivo', tipo: '📌' },
-    { data: '07/09/2024', evento: 'Prova Bimestral', tipo: '📝' },
-    { data: '20/12/2024', evento: 'Encerramento', tipo: '🎓' }
-  ]);
-
-  const [novoEvento, setNovoEvento] = useState<NovoEvento>({ data: '', evento: '', tipo: '📌' });
-
-  // const [events, setFaqs] = useState<FAQ[]>([
-  //   { id: 1, pergunta: 'Como é feita a admissão?', categoria: 'Admissão', status: 'ativa' },
-  //   { id: 2, pergunta: 'Qual é o valor da mensalidade?', categoria: 'Valores', status: 'ativa' },
-  //   { id: 3, pergunta: 'Qual é o uniforme da escola?', categoria: 'Uniforme', status: 'ativa' }
-  // ]);
 
   const [contatos, setContatos] = useState<Contatos>({
     emailPrincipal: 'contato@escola.com.br',
@@ -212,16 +177,7 @@ export default function Information() {
     }
   };
 
-  const adicionarEvento = (): void => {
-    if (novoEvento.data && novoEvento.evento) {
-      setCalendarioEventos([...calendarioEventos, novoEvento]);
-      setNovoEvento({ data: '', evento: '', tipo: '📌' });
-    }
-  };
 
-  const deletarEvento = (index: number): void => {
-    setCalendarioEventos(calendarioEventos.filter((_, i) => i !== index));
-  };
 
   const handleContatoChange = (field: keyof Contatos, value: string): void => {
     setContatos(prev => ({
@@ -310,7 +266,6 @@ export default function Information() {
             <div className="flex gap-2 bg-white p-2 rounded-lg shadow-md flex-wrap">
               {[
                 { id: 'dados', label: 'Dados Básicos' },
-                { id: 'calendario', label: 'Calendário Escolar' },
                 { id: 'contato', label: 'Contato' }
               ].map(aba => (
                 <button
@@ -446,90 +401,6 @@ export default function Information() {
                 >
                   {isUpdating ? 'Salvando...' : 'Salvar Alterações'}
                 </button>
-              </div>
-            )}
-
-            {/* TAB 2: CALENDÁRIO */}
-            {abaSelecionada === 'calendario' && (
-              <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">Calendário Escolar 2024</h2>
-
-                {/* Novo Evento */}
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h3 className="text-lg font-bold text-gray-800 mb-4">Adicionar Novo Evento</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-gray-700 font-semibold mb-2">Data</label>
-                      <input 
-                        type="date" 
-                        value={novoEvento.data}
-                        onChange={(e) => setNovoEvento({...novoEvento, data: e.target.value})}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 font-semibold mb-2">Evento</label>
-                      <input 
-                        type="text" 
-                        placeholder="Ex: Prova Bimestral"
-                        value={novoEvento.evento}
-                        onChange={(e) => setNovoEvento({...novoEvento, evento: e.target.value})}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 font-semibold mb-2">Tipo</label>
-                      <select 
-                        value={novoEvento.tipo}
-                        onChange={(e) => setNovoEvento({...novoEvento, tipo: e.target.value})}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-                      >
-                        <option value="📌">📌 Feriado</option>
-                        <option value="📝">📝 Prova/Avaliação</option>
-                        <option value="🎓">🎓 Formatura</option>
-                        <option value="🎉">🎉 Evento Cultural</option>
-                      </select>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={adicionarEvento}
-                    className="mt-4 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition font-semibold"
-                  >
-                    + Adicionar Evento
-                  </button>
-                </div>
-
-                {/* Tabela de Eventos */}
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-300 p-3 text-left font-bold">Data</th>
-                        <th className="border border-gray-300 p-3 text-left font-bold">Evento</th>
-                        <th className="border border-gray-300 p-3 text-left font-bold">Tipo</th>
-                        <th className="border border-gray-300 p-3 text-left font-bold">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {events?.results.map((evento, index) => (
-                        <tr key={index} className="border-b hover:bg-gray-50 transition">
-                          <td className="border border-gray-300 p-3">{evento.data}</td>
-                          <td className="border border-gray-300 p-3">{evento.evento}</td>
-                          <td className="border border-gray-300 p-3">{evento.tipo}</td>
-                          <td className="border border-gray-300 p-3 flex gap-2">
-                            <button className="text-blue-600 hover:underline font-semibold text-sm">Editar</button>
-                            <button 
-                              onClick={() => deletarEvento(index)}
-                              className="text-red-600 hover:underline font-semibold text-sm"
-                            >
-                              Deletar
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
               </div>
             )}
 

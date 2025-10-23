@@ -46,6 +46,7 @@ const Sidebar: FC = () => {
     { id: 'calendar', label: 'Calendário Escolar', icon: Calendar},
     // {id: 'campaigns', label: 'Campanhas', icon: Goal},
     // { id: "documentos", label: "Documentos", icon: FileText },
+    {id: "contatos", label: "Contatos", icon: Users}, 
     { id: "faqs", label: "FAQs", icon: MessageSquare },
     { id: "leads", label: "Leads", icon: Users },
     // { id: "configuracoes", label: "Configurações", icon: Settings },
