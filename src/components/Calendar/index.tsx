@@ -1,19 +1,10 @@
 import { useState, useEffect } from "react";
 import { useGetEventsQuery, useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation } from "../../services/eventsApi";
-import { useGetSchoolsQuery } from "../../services/schoolApi";
-import { Trash2, Edit2, Plus, Save, X, Calendar as CalendarIcon, AlertCircle, School } from 'lucide-react';
+import { Trash2, Edit2, Plus, Save, X, Calendar as CalendarIcon, AlertCircle } from 'lucide-react';
 import type { Event } from "../../services/eventsApi";
 import { useCurrentSchool } from "../../hooks/useCurrentSchool";
 
  // ✅ Adicionar hook customizado
-  const { 
-    currentSchool, 
-    currentSchoolId, 
-    hasMultipleSchools, 
-    schools,
-    setCurrentSchoolById,
-    isLoading: schoolsLoading 
-  } = useCurrentSchool();
 
 
 interface EventFormData {
@@ -24,9 +15,17 @@ interface EventFormData {
 }
 
 export default function Calendar() {
+    const { 
+    currentSchool, 
+    currentSchoolId, 
+    hasMultipleSchools, 
+    schools,
+    setCurrentSchoolById,
+  } = useCurrentSchool();
+
+
   // ✅ RTK Query Hooks
   const { data: events, isLoading: eventsIsLoading, error: eventsError, refetch: eventRefetch } = useGetEventsQuery();
-  const { data: schoolsData } = useGetSchoolsQuery(); // ⚠️ Remover esta linha se usar useCurrentSchool
   const [createEvent, { isLoading: isCreating }] = useCreateEventMutation();
   const [updateEvent, { isLoading: isUpdating }] = useUpdateEventMutation();
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
@@ -35,8 +34,7 @@ export default function Calendar() {
   const [editandoEvento, setEditandoEvento] = useState<Event | null>(null);
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null);
   const [eventoParaDeletar, setEventoParaDeletar] = useState<number | null>(null);
-  const [escolaAtualId, setEscolaAtualId] = useState<string>('');
-  console.log('Escola Atual ID:', escolaAtualId);
+
 
     const [formData, setFormData] = useState<EventFormData>({
     escola: parseInt(currentSchoolId), // ⚠️ MUDOU: converter para number

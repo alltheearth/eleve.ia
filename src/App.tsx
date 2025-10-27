@@ -1,3 +1,4 @@
+// ✅ CORRETO - src/App.tsx
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from './store';
@@ -20,7 +21,6 @@ function App() {
   useEffect(() => {
     if (!isAuthenticated && authService.isAuthenticated()) {
       // Se o token existe mas Redux não sabe, sincronizar
-      // Você pode adicionar um thunk para buscar dados do usuário aqui
     } else if (!isAuthenticated && !authService.isAuthenticated()) {
       // Não autenticado, mostrar login
       dispatch({ type: 'moduleActive/setActiveModule', payload: 'login' });
@@ -49,8 +49,8 @@ function App() {
               return <Calendar />;
             case 'leads':
               return <Leads />;
-              case 'contatos':
-              return <Contacts />; // Substitua por <Contacts /> quando o componente estiver disponível
+            case 'contatos':
+              return <Contacts />;
             default:
               return <Dashboard />;
           }

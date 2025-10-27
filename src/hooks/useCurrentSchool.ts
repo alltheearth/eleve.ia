@@ -1,23 +1,16 @@
-// src/hooks/useCurrentSchool.ts - Hook para gerenciar escola atual
+// ✅ CORRETO - src/hooks/useCurrentSchool.ts
 import { useState, useEffect } from 'react';
 import { useGetSchoolsQuery } from '../services/schoolApi';
 import type { School } from '../services/schoolApi';
 
 interface UseCurrentSchoolReturn {
-  // Escola atual
   currentSchool: School | null;
   currentSchoolId: string;
-  
-  // Todas as escolas
   schools: School[];
   hasMultipleSchools: boolean;
-  
-  // Estados
   isLoading: boolean;
   isError: boolean;
   error: any;
-  
-  // Ações
   setCurrentSchoolById: (id: string) => void;
   refetch: () => void;
 }
@@ -68,10 +61,6 @@ export function useCurrentSchool(): UseCurrentSchoolReturn {
   };
 }
 
-/**
- * Hook simplificado que retorna apenas o ID da escola atual
- * Útil quando você só precisa do ID para fazer requests
- */
 export function useCurrentSchoolId(): string {
   const { currentSchoolId } = useCurrentSchool();
   return currentSchoolId;
