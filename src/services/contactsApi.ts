@@ -1,36 +1,35 @@
-// src/services/schoolApi.ts - RTK Query para gerenciar Schools
+// src/services/contactsApi.ts - RTK Query para gerenciar Contatos
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const API_URL = 'http://localhost:8000/api';
 
-
-interface Contact{
-    "id": 1,
-    "usuario_id": 1,
-    "escola": 7,
-    "escola_nome": "INSTITUTO DE EDUCAÇÂO CRISTÃ VINCLER",
-    "email_principal": "contato@escola.com.br",
-    "telefone_principal": "(11) 3000-0000",
-    "whatsapp": "(11) 99999-0000",
-    "instagram": "@colegioexemplo",
-    "facebook": "Colégio Exemplo",
-    "horario_aula": "07:30 - 17:30",
-    "diretor": "José Silva",
-    "email_diretor": "diretor@escola.com.br",
-    "coordenador": "Maria Santos",
-    "email_coordenador": "coord@escola.com.br",
-    "atualizado_em": "2025-10-21T16:49:39.830888-03:00"
+interface Contact {
+  id: number;
+  usuario_id: number;
+  escola: number;
+  escola_nome: string;
+  nome: string;
+  email: string;
+  telefone: string;
+  data_nascimento?: string;
+  status: 'ativo' | 'inativo';
+  origem: string;
+  ultima_interacao?: string;
+  observacoes?: string;
+  tags?: string;
+  criado_em: string;
+  atualizado_em: string;
 }
 
 interface ContactsResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: Event[];
+  results: Contact[];
 }
 
 export const contactsApi = createApi({
-  reducerPath: 'ContactsApi',
+  reducerPath: 'contactsApi',
   baseQuery: fetchBaseQuery({
     baseUrl: API_URL,
     prepareHeaders: (headers) => {
@@ -44,21 +43,21 @@ export const contactsApi = createApi({
   }),
   tagTypes: ['Contact'],
   endpoints: (builder) => ({
-    // Buscar todas as eventos do usuário
+    // Buscar todos os contatos do usuário
     getContacts: builder.query<ContactsResponse, void>({
       query: () => '/contatos/',
       providesTags: ['Contact'],
       transformResponse: (response: ContactsResponse) => {
-        console.log('✅ Contatos carregadas:', response);
+        console.log('✅ Contatos carregados:', response);
         return response;
       },
       transformErrorResponse: (response) => {
-        console.error('❌ Erro ao buscar Contactos:', response);
+        console.error('❌ Erro ao buscar contatos:', response);
         return response;
       },
     }),
 
-    // Buscar Contacto por ID
+    // Buscar contato por ID
     getContactById: builder.query<Contact, number>({
       query: (id) => `/contatos/${id}/`,
       providesTags: (result, error, id) => [{ type: 'Contact', id }],
@@ -68,12 +67,12 @@ export const contactsApi = createApi({
       },
     }),
 
-    // Criar nova Contacto
+    // Criar novo contato
     createContact: builder.mutation<Contact, Partial<Contact>>({
-      query: (ContactData) => ({
+      query: (contactData) => ({
         url: '/contatos/',
         method: 'POST',
-        body: ContactData,
+        body: contactData,
       }),
       invalidatesTags: ['Contact'],
       transformResponse: (response: Contact) => {
@@ -81,12 +80,12 @@ export const contactsApi = createApi({
         return response;
       },
       transformErrorResponse: (response) => {
-        console.error('❌ Erro ao criar Contact:', response);
+        console.error('❌ Erro ao criar contato:', response);
         return response;
       },
     }),
 
-    // Atualizar Contacto
+    // Atualizar contato
     updateContact: builder.mutation<Contact, { id: number; data: Partial<Contact> }>({
       query: ({ id, data }) => ({
         url: `/contatos/${id}/`,
@@ -100,7 +99,7 @@ export const contactsApi = createApi({
       },
     }),
 
-    // Deletar Contacto
+    // Deletar contato
     deleteContact: builder.mutation<void, number>({
       query: (id) => ({
         url: `/contatos/${id}/`,
@@ -114,9 +113,7 @@ export const contactsApi = createApi({
   }),
 });
 
-// ============================================
-// EXPORTAR HOOKS GERADOS AUTOMATICAMENTE
-// ============================================
+// Exportar hooks gerados automaticamente
 export const {
   useGetContactsQuery,
   useGetContactByIdQuery,

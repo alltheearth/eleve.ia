@@ -20,7 +20,7 @@ export default function Calendar() {
   const [createEvent, { isLoading: isCreating }] = useCreateEventMutation();
   const [updateEvent, { isLoading: isUpdating }] = useUpdateEventMutation();
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
-
+  schoolsLoading;
   // ✅ Estados
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editandoEvento, setEditandoEvento] = useState<Event | null>(null);

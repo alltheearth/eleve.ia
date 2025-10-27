@@ -662,7 +662,7 @@ function StatCard({ label, value, color, icon }: StatCardProps) {
         <p className="text-sm font-semibold opacity-80">{label}</p>
         {icon}
       </div>
-      <p className="text-3xl font-bold text-gray-900">{value}</p>
+      <p className="text-3xl font-bold">{value}</p>
     </div>
   );
-}   
+}
