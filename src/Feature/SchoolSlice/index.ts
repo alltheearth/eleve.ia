@@ -129,7 +129,7 @@ export const fetchSchoolById = createAsyncThunk(
 // Criar nova escola
 export const createSchool = createAsyncThunk(
   'school/createSchool',
-  async (escolaData: Partial<|School>, { rejectWithValue }) => {
+  async (escolaData: Partial<School>, { rejectWithValue }) => {
     try {
       const config = getAuthConfig();
       const response = await axios.post<School>(

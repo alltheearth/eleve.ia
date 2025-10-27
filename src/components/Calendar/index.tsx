@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { useGetEventsQuery, useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation } from "../../services/eventsApi";
 import { useGetSchoolsQuery } from "../../services/schoolApi";
 import { Trash2, Edit2, Plus, Save, X, Calendar as CalendarIcon, AlertCircle, School } from 'lucide-react';
-
-// Tipos importados do eventsApi
 import type { Event } from "../../services/eventsApi";
 
 interface EventFormData {
