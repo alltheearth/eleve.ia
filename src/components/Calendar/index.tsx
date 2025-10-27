@@ -3,9 +3,21 @@ import { useGetEventsQuery, useCreateEventMutation, useUpdateEventMutation, useD
 import { useGetSchoolsQuery } from "../../services/schoolApi";
 import { Trash2, Edit2, Plus, Save, X, Calendar as CalendarIcon, AlertCircle, School } from 'lucide-react';
 import type { Event } from "../../services/eventsApi";
+import { useCurrentSchool } from "../../hooks/useCurrentSchool";
+
+ // ✅ Adicionar hook customizado
+  const { 
+    currentSchool, 
+    currentSchoolId, 
+    hasMultipleSchools, 
+    schools,
+    setCurrentSchoolById,
+    isLoading: schoolsLoading 
+  } = useCurrentSchool();
+
 
 interface EventFormData {
-  escola: string;
+  escola: number;
   data: string;
   evento: string;
   tipo: string;
@@ -14,11 +26,10 @@ interface EventFormData {
 export default function Calendar() {
   // ✅ RTK Query Hooks
   const { data: events, isLoading: eventsIsLoading, error: eventsError, refetch: eventRefetch } = useGetEventsQuery();
-  const { data: schoolsData, isLoading: schoolsLoading } = useGetSchoolsQuery();
+  const { data: schoolsData } = useGetSchoolsQuery(); // ⚠️ Remover esta linha se usar useCurrentSchool
   const [createEvent, { isLoading: isCreating }] = useCreateEventMutation();
   const [updateEvent, { isLoading: isUpdating }] = useUpdateEventMutation();
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
-  schoolsLoading;
   // ✅ Estados
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editandoEvento, setEditandoEvento] = useState<Event | null>(null);
@@ -27,28 +38,23 @@ export default function Calendar() {
   const [escolaAtualId, setEscolaAtualId] = useState<string>('');
   console.log('Escola Atual ID:', escolaAtualId);
 
-  const [formData, setFormData] = useState<EventFormData>({
-    escola: '',
+    const [formData, setFormData] = useState<EventFormData>({
+    escola: parseInt(currentSchoolId), // ⚠️ MUDOU: converter para number
     data: '',
     evento: '',
     tipo: 'feriado',
   });
 
   // ✅ Pegar escola automaticamente quando carregar
-  useEffect(() => {
-    if (schoolsData && schoolsData.results.length > 0) {
-      const primeiraEscola = schoolsData.results[0];
-      const escolaId = primeiraEscola.id.toString();
-      setEscolaAtualId(escolaId);
-      
-      // Atualizar formData se não estiver editando
-      if (!editandoEvento) {
-        setFormData(prev => ({ ...prev, escola: escolaId }));
-      }
-      
-      console.log('✅ Escola carregada:', primeiraEscola.nome_escola, '- ID:', escolaId);
+   useEffect(() => {
+    if (currentSchoolId && !editandoEvento) {
+      setFormData(prev => ({ 
+        ...prev, 
+        escola: parseInt(currentSchoolId) // ⚠️ MUDOU: converter para number
+      }));
     }
-  }, [schoolsData, editandoEvento]);
+  }, [currentSchoolId, editandoEvento]);
+
 
   // ✅ Limpar mensagens automaticamente
   useEffect(() => {
@@ -59,9 +65,9 @@ export default function Calendar() {
   }, [mensagem]);
 
   // ✅ Reset form quando fechar
-  const resetForm = () => {
+const resetForm = () => {
     setFormData({
-      escola: '1',
+      escola: parseInt(currentSchoolId), // ⚠️ MUDOU: converter para number
       data: '',
       evento: '',
       tipo: 'feriado',
@@ -71,9 +77,9 @@ export default function Calendar() {
   };
 
   // ✅ Carregar dados do evento para edição
-  const iniciarEdicao = (evento: Event) => {
+   const iniciarEdicao = (evento: Event) => {
     setFormData({
-      escola: evento.escola.toString(),
+      escola: evento.escola, // ⚠️ MUDOU: não precisa mais converter para string
       data: evento.data,
       evento: evento.evento,
       tipo: evento.tipo,
@@ -82,6 +88,7 @@ export default function Calendar() {
     setMostrarFormulario(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
 
   // ✅ Validação do formulário
   const validarFormulario = (): string | null => {
@@ -196,18 +203,33 @@ export default function Calendar() {
     <div className="flex h-screen bg-gray-50">
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white shadow-sm p-6 flex justify-between items-center border-b border-gray-200">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Calendário Escolar</h1>
-            <p className="text-sm text-gray-600">
-              {events?.results?.[0]?.escola_nome || 'Gerencie os eventos da sua instituição'}
-            </p>
-          </div>
-          <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
-            AD
-          </div>
-        </header>
-
+         <header className="bg-white shadow-sm p-6 flex justify-between items-center border-b border-gray-200">
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900">Calendário Escolar</h1>
+      <p className="text-sm text-gray-600">
+        {currentSchool?.nome_escola || 'Gerencie os eventos da sua instituição'} {/* ⚠️ MUDOU */}
+      </p>
+    </div>
+    <div className="flex items-center gap-4">
+      {/* ✅ ADICIONAR: Seletor de Escola se tiver múltiplas */}
+      {hasMultipleSchools && (
+        <select
+          value={currentSchoolId}
+          onChange={(e) => setCurrentSchoolById(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 font-medium"
+        >
+          {schools.map(escola => (
+            <option key={escola.id} value={escola.id}>
+              {escola.nome_escola}
+            </option>
+          ))}
+        </select>
+      )}
+      <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
+        AD
+      </div>
+    </div>
+  </header>
         {/* Content */}
         <main className="flex-1 overflow-auto p-6">
           <div className="max-w-6xl mx-auto space-y-6">

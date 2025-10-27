@@ -6,12 +6,13 @@ import { Trash2, Edit2, Plus, Save, X, MessageSquare, AlertCircle, School, Searc
 import type {Faqs as Faq } from "../../services/faqsApi";
 
 interface FaqFormData {
-  escola: string;
+  escola: number;
   pergunta: string;
   resposta: string;
   categoria: string;
   status: 'ativa' | 'inativa';
 }
+
 
 const CATEGORIAS = [
   'Admissão',
@@ -52,20 +53,23 @@ export default function Faqs() {
   const [filtroCategoria, setFiltroCategoria] = useState('todas');
   const [filtroStatus, setFiltroStatus] = useState<'todas' | 'ativa' | 'inativa'>('todas');
 
-  const [formData, setFormData] = useState<FaqFormData>({
-    escola: currentSchoolId,
-    pergunta: '',
-    resposta: '',
-    categoria: 'Geral',
-    status: 'ativa',
-  });
+const [formData, setFormData] = useState<FaqFormData>({
+  escola: parseInt(currentSchoolId),
+  pergunta: '',
+  resposta: '',
+  categoria: 'Geral',
+  status: 'ativa',
+});
 
-  // ✅ Atualizar formData quando escola mudar
-  useEffect(() => {
-    if (currentSchoolId && !editandoFaq) {
-      setFormData(prev => ({ ...prev, escola: currentSchoolId }));
-    }
-  }, [currentSchoolId, editandoFaq]);
+// ✅ CORRETO - Atualizar o useEffect
+useEffect(() => {
+  if (currentSchoolId && !editandoFaq) {
+    setFormData(prev => ({ 
+      ...prev, 
+      escola: parseInt(currentSchoolId) // ⚠️ MUDOU: converter para number
+    }));
+  }
+}, [currentSchoolId, editandoFaq]);
 
   // ✅ Limpar mensagens automaticamente
   useEffect(() => {
@@ -76,31 +80,31 @@ export default function Faqs() {
   }, [mensagem]);
 
   // ✅ Reset form
-  const resetForm = () => {
-    setFormData({
-      escola: currentSchoolId,
-      pergunta: '',
-      resposta: '',
-      categoria: 'Geral',
-      status: 'ativa',
-    });
-    setEditandoFaq(null);
-    setMostrarFormulario(false);
-  };
+const resetForm = () => {
+  setFormData({
+    escola: parseInt(currentSchoolId), // ⚠️ MUDOU: converter para number
+    pergunta: '',
+    resposta: '',
+    categoria: 'Geral',
+    status: 'ativa',
+  });
+  setEditandoFaq(null);
+  setMostrarFormulario(false);
+};
 
   // ✅ Carregar dados para edição
-  const iniciarEdicao = (faq: Faq) => {
-    setFormData({
-      escola: faq.escola.toString(),
-      pergunta: faq.pergunta,
-      resposta: faq.resposta,
-      categoria: faq.categoria,
-      status: faq.status,
-    });
-    setEditandoFaq(faq);
-    setMostrarFormulario(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+const iniciarEdicao = (faq: Faq) => {
+  setFormData({
+    escola: faq.escola, // ⚠️ MUDOU: não precisa mais converter para string
+    pergunta: faq.pergunta,
+    resposta: faq.resposta,
+    categoria: faq.categoria,
+    status: faq.status as 'ativa' | 'inativa', // ⚠️ MUDOU: adicionar type assertion
+  });
+  setEditandoFaq(faq);
+  setMostrarFormulario(true);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
   // ✅ Validação
   const validarFormulario = (): string | null => {
@@ -351,22 +355,25 @@ export default function Faqs() {
 
                 <div className="space-y-4">
                   {/* Campo Escola - só mostra se tiver múltiplas */}
-                  {hasMultipleSchools && (
-                    <div>
-                      <label className="block text-gray-700 font-semibold mb-2">Escola *</label>
-                      <select
-                        value={formData.escola}
-                        onChange={(e) => setFormData({ ...formData, escola: e.target.value })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
-                      >
-                        {schools.map(escola => (
-                          <option key={escola.id} value={escola.id}>
-                            {escola.nome_escola}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                 {hasMultipleSchools && (
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">Escola *</label>
+                    <select
+                      value={formData.escola}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        escola: parseInt(e.target.value) // ⚠️ MUDOU: converter para number
+                      })}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200"
+                    >
+                      {schools.map(escola => (
+                        <option key={escola.id} value={escola.id}>
+                          {escola.nome_escola}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
