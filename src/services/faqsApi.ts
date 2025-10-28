@@ -56,7 +56,7 @@ export const faqsApi = createApi({
     // Buscar escola por ID
     getFaqById: builder.query<Faqs, number>({
       query: (id) => `/faqs/${id}/`,
-      providesTags: (result, error, id) => [{ type: 'Faq', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Faq', id }],
       transformResponse: (response: Faqs) => {
         console.log('✅ Escola carregada:', response);
         return response;
@@ -88,7 +88,7 @@ export const faqsApi = createApi({
         method: 'PATCH',
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Faq', id }, 'Faq'],
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Faq', id }, 'Faq'],
       transformResponse: (response: Faqs) => {
         console.log('✅ Faq atualizada:', response);
         return response;

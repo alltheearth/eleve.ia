@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, Phone, Building2, ArrowRight, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Lock, User, ArrowRight, CheckCircle } from 'lucide-react';
 import { loginUser, registerUser } from '../../../Feature/AuthSlice';
 import { setActiveModule } from '../../../Feature/ModuleActiveSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,7 +12,7 @@ export default function Login() {
   const [telaAtual, setTelaAtual] = useState<'login' | 'registro'>('login');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [mostrarSenhaConfirm, setMostrarSenhaConfirm] = useState(false);
-
+  setMostrarSenhaConfirm  (false)
   const [login, setLogin] = useState({
     username: '',
     password: '',
