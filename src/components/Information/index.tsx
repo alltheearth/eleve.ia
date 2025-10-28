@@ -232,19 +232,7 @@ export default function Information() {
   return (
     <div className="flex h-screen bg-gray-50">
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white shadow-sm p-6 flex justify-between items-center border-b border-gray-200">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Informações da Escola</h1>
-            <p className="text-sm text-gray-600">
-              {formData.nomeEscola || 'Gerencie todos os dados da sua instituição'}
-            </p>
-          </div>
-          <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
-            AD
-          </div>
-        </header>
-
+       
         {/* Content */}
         <main className="flex-1 overflow-auto p-6">
           <div className="max-w-6xl mx-auto space-y-6">

@@ -19,22 +19,6 @@ export default function Dashboard(): JSX.Element {
     <div className="flex h-screen bg-gray-50">
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white shadow-sm p-6 flex justify-between items-center border-b border-gray-200">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-sm text-gray-600">Bem-vindo de volta ao Eleve.ia</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-4 py-2 bg-green-100 rounded-full">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-green-700 font-semibold text-sm">Agente Ativo</span>
-            </div>
-            <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
-              AD
-            </div>
-          </div>
-        </header>
 
         {/* Dashboard Content */}
         <main className="flex-1 overflow-auto p-6">

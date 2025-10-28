@@ -32,10 +32,7 @@ export default function Contacts() {
   // Hook customizado - gerencia escola
   const { 
     currentSchool, 
-    currentSchoolId, 
-    hasMultipleSchools, 
-    schools,
-    setCurrentSchoolById,
+    currentSchoolId,
     isLoading: schoolsLoading 
   } = useCurrentSchool();
 
@@ -267,32 +264,6 @@ export default function Contacts() {
   return (
     <div className="flex h-screen bg-gray-50">
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white shadow-sm p-6 flex justify-between items-center border-b border-gray-200">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Contatos</h1>
-            <p className="text-sm text-gray-600">{currentSchool.nome_escola}</p>
-          </div>
-          <div className="flex items-center gap-4">
-            {hasMultipleSchools && (
-              <select
-                value={currentSchoolId}
-                onChange={(e) => setCurrentSchoolById(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 font-medium"
-              >
-                {schools.map(escola => (
-                  <option key={escola.id} value={escola.id}>
-                    {escola.nome_escola}
-                  </option>
-                ))}
-              </select>
-            )}
-            <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
-              AD
-            </div>
-          </div>
-        </header>
-
         {/* Content */}
         <main className="flex-1 overflow-auto p-6">
           <div className="max-w-7xl mx-auto space-y-6">
