@@ -55,7 +55,7 @@ export const eventsApi = createApi({
     // Buscar evento por ID
     getEventById: builder.query<Event, number>({
       query: (id) => `/eventos/${id}/`,
-      providesTags: (result, error, id) => [{ type: 'Event', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Event', id }],
       transformResponse: (response: Event) => {
         console.log('✅ Evento carregado:', response);
         return response;
@@ -87,7 +87,7 @@ export const eventsApi = createApi({
         method: 'PATCH',
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Event', id }, 'Event'],
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Event', id }, 'Event'],
       transformResponse: (response: Event) => {
         console.log('✅ Evento atualizado:', response);
         return response;

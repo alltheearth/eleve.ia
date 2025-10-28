@@ -3,7 +3,6 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const API_URL = 'http://localhost:8000/api';
 
-// ✅ CORRETO - Interface Lead
 interface Lead {
   id: number;
   usuario_id: number;
@@ -50,7 +49,6 @@ interface LeadFilters {
   search?: string;
 }
 
-// ✅ CORRETO - Adicionar interface para o payload do CSV
 interface ExportCSVParams {
   escola_id?: string;
 }
@@ -70,42 +68,38 @@ export const leadsApi = createApi({
   }),
   tagTypes: ['Lead', 'LeadStats'],
   endpoints: (builder) => ({
-    // Buscar todos os leads do usuário
+    // ✅ CORRETO - Buscar todos os leads do usuário
     getLeads: builder.query<LeadsResponse, LeadFilters | void>({
-      query: (filters = {}) => {
+      query: (filters) => {
         const params = new URLSearchParams();
         
-        if (filters.escola_id) params.append('escola_id', filters.escola_id);
-        if (filters.status && filters.status !== 'todos') {
+        // ✅ CORRETO - Verificar se filters existe antes de acessar propriedades
+        if (filters && filters.escola_id) {
+          params.append('escola_id', filters.escola_id);
+        }
+        if (filters && filters.status && filters.status !== 'todos') {
           params.append('status', filters.status);
         }
-        if (filters.origem) params.append('origem', filters.origem);
-        if (filters.search) params.append('search', filters.search);
+        if (filters && filters.origem) {
+          params.append('origem', filters.origem);
+        }
+        if (filters && filters.search) {
+          params.append('search', filters.search);
+        }
         
-        return `/leads/?${params.toString()}`;
+        const queryString = params.toString();
+        return queryString ? `/leads/?${queryString}` : '/leads/';
       },
       providesTags: ['Lead'],
-      transformResponse: (response: LeadsResponse) => {
-        console.log('✅ Leads carregados:', response);
-        return response;
-      },
-      transformErrorResponse: (response) => {
-        console.error('❌ Erro ao buscar leads:', response);
-        return response;
-      },
     }),
 
-    // Buscar lead por ID
+    // ✅ CORRETO - Buscar lead por ID
     getLeadById: builder.query<Lead, number>({
       query: (id) => `/leads/${id}/`,
-      providesTags: (result, error, id) => [{ type: 'Lead', id }],
-      transformResponse: (response: Lead) => {
-        console.log('✅ Lead carregado:', response);
-        return response;
-      },
+      providesTags: (_result, _error, id) => [{ type: 'Lead', id }],
     }),
 
-    // Criar novo lead
+    // ✅ CORRETO - Criar novo lead
     createLead: builder.mutation<Lead, Partial<Lead>>({
       query: (leadData) => ({
         url: '/leads/',
@@ -113,78 +107,55 @@ export const leadsApi = createApi({
         body: leadData,
       }),
       invalidatesTags: ['Lead', 'LeadStats'],
-      transformResponse: (response: Lead) => {
-        console.log('✅ Lead criado:', response);
-        return response;
-      },
-      transformErrorResponse: (response) => {
-        console.error('❌ Erro ao criar lead:', response);
-        return response;
-      },
     }),
 
-    // Atualizar lead
+    // ✅ CORRETO - Atualizar lead
     updateLead: builder.mutation<Lead, { id: number; data: Partial<Lead> }>({
       query: ({ id, data }) => ({
         url: `/leads/${id}/`,
         method: 'PATCH',
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (_result, _error, { id }) => [
         { type: 'Lead', id },
         'Lead',
         'LeadStats',
       ],
-      transformResponse: (response: Lead) => {
-        console.log('✅ Lead atualizado:', response);
-        return response;
-      },
     }),
 
-    // Deletar lead
+    // ✅ CORRETO - Deletar lead
     deleteLead: builder.mutation<void, number>({
       query: (id) => ({
         url: `/leads/${id}/`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Lead', 'LeadStats'],
-      transformResponse: () => {
-        console.log('✅ Lead deletado');
-      },
     }),
 
-    // Mudar status do lead
+    // ✅ CORRETO - Mudar status do lead
     mudarStatus: builder.mutation<Lead, { id: number; status: Lead['status'] }>({
       query: ({ id, status }) => ({
         url: `/leads/${id}/mudar_status/`,
         method: 'POST',
         body: { status },
       }),
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (_result, _error, { id }) => [
         { type: 'Lead', id },
         'Lead',
         'LeadStats',
       ],
-      transformResponse: (response: Lead) => {
-        console.log('✅ Status atualizado:', response);
-        return response;
-      },
     }),
 
-    // Obter estatísticas
+    // ✅ CORRETO - Obter estatísticas
     getEstatisticas: builder.query<LeadStats, string | void>({
       query: (escola_id) => {
         const params = escola_id ? `?escola_id=${escola_id}` : '';
         return `/leads/estatisticas/${params}`;
       },
       providesTags: ['LeadStats'],
-      transformResponse: (response: LeadStats) => {
-        console.log('✅ Estatísticas carregadas:', response);
-        return response;
-      },
     }),
 
-    // Buscar leads recentes
+    // ✅ CORRETO - Buscar leads recentes
     getLeadsRecentes: builder.query<Lead[], { escola_id?: string; limit?: number }>({
       query: ({ escola_id, limit = 10 }) => {
         const params = new URLSearchParams();
@@ -202,26 +173,16 @@ export const leadsApi = createApi({
         method: 'POST',
         body: { escola_id },
         responseHandler: async (response) => {
-          // ✅ Verificar se a resposta é ok
           if (!response.ok) {
             throw new Error('Erro ao exportar CSV');
           }
           return response.blob();
         },
       }),
-      transformResponse: (response: Blob) => {
-        console.log('✅ CSV exportado');
-        return response;
-      },
-      transformErrorResponse: (error) => {
-        console.error('❌ Erro ao exportar CSV:', error);
-        return error;
-      },
     }),
   }),
 });
 
-// ✅ CORRETO - Exportar hooks
 export const {
   useGetLeadsQuery,
   useGetLeadByIdQuery,
@@ -234,5 +195,4 @@ export const {
   useExportarCSVMutation,
 } = leadsApi;
 
-// ✅ CORRETO - Exportar tipos
 export type { Lead, LeadsResponse, LeadStats, LeadFilters, ExportCSVParams };

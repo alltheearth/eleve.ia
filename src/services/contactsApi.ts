@@ -60,7 +60,7 @@ export const contactsApi = createApi({
     // Buscar contato por ID
     getContactById: builder.query<Contact, number>({
       query: (id) => `/contatos/${id}/`,
-      providesTags: (result, error, id) => [{ type: 'Contact', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Contact', id }],
       transformResponse: (response: Contact) => {
         console.log('✅ Contato carregado:', response);
         return response;
@@ -92,7 +92,7 @@ export const contactsApi = createApi({
         method: 'PATCH',
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Contact', id }, 'Contact'],
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Contact', id }, 'Contact'],
       transformResponse: (response: Contact) => {
         console.log('✅ Contato atualizado:', response);
         return response;

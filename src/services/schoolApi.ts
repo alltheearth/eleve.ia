@@ -75,7 +75,7 @@ export const schoolApi = createApi({
     // Buscar escola por ID
     getSchoolById: builder.query<School, number>({
       query: (id) => `/escolas/${id}/`,
-      providesTags: (result, error, id) => [{ type: 'School', id }],
+      providesTags: (_result, _error, id) => [{ type: 'School', id }],
       transformResponse: (response: School) => {
         console.log('✅ Escola carregada:', response);
         return response;
@@ -107,7 +107,7 @@ export const schoolApi = createApi({
         method: 'PATCH',
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'School', id }, 'School'],
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'School', id }, 'School'],
       transformResponse: (response: School) => {
         console.log('✅ Escola atualizada:', response);
         return response;
