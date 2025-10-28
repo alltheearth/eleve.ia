@@ -7,6 +7,7 @@ import { faqsApi } from "../services/faqsApi";
 import { eventsApi } from "../services/eventsApi";
 import { contactsApi } from "../services/contactsApi";
 import { leadsApi } from "../services/leadsApi";
+import { uzapiApi } from "../services/uzapiApi";
 
 
 const store = configureStore({
@@ -18,6 +19,8 @@ const store = configureStore({
         [eventsApi.reducerPath]: eventsApi.reducer,
         [contactsApi.reducerPath]: contactsApi.reducer,
         [leadsApi.reducerPath]: leadsApi.reducer,
+        [uzapiApi.reducerPath]: uzapiApi.reducer,
+        uazapi: uzapiApi.reducer
     },
     // Middleware necessário para o RTK Query
     middleware: (getDefaultMiddleware) =>
@@ -26,7 +29,8 @@ const store = configureStore({
             faqsApi.middleware, 
             eventsApi.middleware,
             contactsApi.middleware,
-            leadsApi.middleware),
+            leadsApi.middleware,
+            uzapiApi.middleware),
 })
 
 export type RootState = ReturnType<typeof store.getState>;
