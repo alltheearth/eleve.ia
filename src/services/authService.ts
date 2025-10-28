@@ -1,6 +1,6 @@
 // src/services/authService.ts - COM DEBUG DETALHADO
 
-import axios, { type AxiosInstance, AxiosError } from 'axios';
+import axios, { type AxiosInstance} from 'axios';
 
 interface LoginCredentials {
   username: string;
