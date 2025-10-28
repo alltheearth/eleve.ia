@@ -12,7 +12,6 @@ export default function Login() {
   const [telaAtual, setTelaAtual] = useState<'login' | 'registro'>('login');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [mostrarSenhaConfirm, setMostrarSenhaConfirm] = useState(false);
-  setMostrarSenhaConfirm  (false)
   const [login, setLogin] = useState({
     username: '',
     password: '',
@@ -310,6 +309,7 @@ export default function Login() {
                   onChange={(e) => setRegistro({ ...registro, password2: e.target.value })}
                   disabled={loading}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50"
+                  onClick={ ()=> setMostrarSenhaConfirm(true)}
                 />
               </div>
 
