@@ -37,7 +37,7 @@ interface ApiError {
 class AuthService {
   private api: AxiosInstance;
   private readonly TOKEN_KEY = 'eleve_token';
-  private readonly API_URL = 'http://localhost:8000/api';
+  private readonly API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
   constructor() {
     this.api = axios.create({
