@@ -1,7 +1,7 @@
 // src/services/leadsApi.ts - RTK Query para gerenciar Leads
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 interface Lead {
   id: number;

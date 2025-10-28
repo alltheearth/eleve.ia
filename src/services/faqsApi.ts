@@ -1,7 +1,7 @@
 // src/services/schoolApi.ts - RTK Query para gerenciar Schools
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 
 interface Faqs {
