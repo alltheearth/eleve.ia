@@ -3,6 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const API_URL = 'http://localhost:8000/api';
 
+// ✅ CORRETO - Interface Lead
 interface Lead {
   id: number;
   usuario_id: number;
@@ -47,6 +48,11 @@ interface LeadFilters {
   status?: string;
   origem?: string;
   search?: string;
+}
+
+// ✅ CORRETO - Adicionar interface para o payload do CSV
+interface ExportCSVParams {
+  escola_id?: string;
 }
 
 export const leadsApi = createApi({
@@ -189,22 +195,33 @@ export const leadsApi = createApi({
       providesTags: ['Lead'],
     }),
 
-    // Exportar para CSV
-    exportarCSV: builder.mutation<Blob, { escola_id?: string }>({
+    // ✅ CORRETO - Exportar para CSV
+    exportarCSV: builder.mutation<Blob, ExportCSVParams>({
       query: ({ escola_id }) => ({
         url: '/leads/exportar_csv/',
         method: 'POST',
         body: { escola_id },
-        responseHandler: (response) => response.blob(),
+        responseHandler: async (response) => {
+          // ✅ Verificar se a resposta é ok
+          if (!response.ok) {
+            throw new Error('Erro ao exportar CSV');
+          }
+          return response.blob();
+        },
       }),
       transformResponse: (response: Blob) => {
         console.log('✅ CSV exportado');
         return response;
       },
+      transformErrorResponse: (error) => {
+        console.error('❌ Erro ao exportar CSV:', error);
+        return error;
+      },
     }),
   }),
 });
 
+// ✅ CORRETO - Exportar hooks
 export const {
   useGetLeadsQuery,
   useGetLeadByIdQuery,
@@ -217,4 +234,5 @@ export const {
   useExportarCSVMutation,
 } = leadsApi;
 
-export type { Lead, LeadsResponse, LeadStats, LeadFilters };
+// ✅ CORRETO - Exportar tipos
+export type { Lead, LeadsResponse, LeadStats, LeadFilters, ExportCSVParams };
