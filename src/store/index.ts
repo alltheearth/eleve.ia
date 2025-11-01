@@ -1,4 +1,4 @@
-// src/store/index.ts - ATUALIZADO COM RTK QUERY
+// src/store/index.ts - CORRIGIDO
 import { configureStore } from "@reduxjs/toolkit";
 import ModuleActiveSlice from "../Feature/ModuleActiveSlice";
 import AuthSlice from "../Feature/AuthSlice";
@@ -8,7 +8,6 @@ import { eventsApi } from "../services/eventsApi";
 import { contactsApi } from "../services/contactsApi";
 import { leadsApi } from "../services/leadsApi";
 import { uzapiApi } from "../services/uzapiApi";
-
 
 const store = configureStore({
     reducer: {
@@ -20,9 +19,7 @@ const store = configureStore({
         [contactsApi.reducerPath]: contactsApi.reducer,
         [leadsApi.reducerPath]: leadsApi.reducer,
         [uzapiApi.reducerPath]: uzapiApi.reducer,
-        uazapi: uzapiApi.reducer
     },
-    // Middleware necessário para o RTK Query
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(
             schoolApi.middleware, 
@@ -30,7 +27,8 @@ const store = configureStore({
             eventsApi.middleware,
             contactsApi.middleware,
             leadsApi.middleware,
-            uzapiApi.middleware),
+            uzapiApi.middleware
+        ),
 })
 
 export type RootState = ReturnType<typeof store.getState>;

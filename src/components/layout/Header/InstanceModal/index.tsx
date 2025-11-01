@@ -1,34 +1,37 @@
-// src/components/layout/Header/InstanceModal.tsx
-import { X, Smartphone, CheckCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
-
+// src/components/layout/Header/InstanceModal/index.tsx - ATUALIZADO COM QR CODE REAL
+import { X, Smartphone, CheckCircle, RefreshCw } from 'lucide-react';
+import { useEffect } from 'react';
+import type { StatusResponse } from '../../../../services/uzapiApi';
 
 interface InstanceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  qrCode: string;
+  instanceStatus?: StatusResponse;
   isLoading?: boolean;
 }
 
-const InstanceModal = ({ isOpen, onClose, onConfirm, isLoading = false }: InstanceModalProps) => {
-  const [qrCode, setQrCode] = useState<string>('');
-  const [isConnected, setIsConnected] = useState(false);
-  // Mock QR Code - futuramente será substituído pelo código real
+const InstanceModal = ({ 
+  isOpen, 
+  onClose, 
+  qrCode, 
+  instanceStatus,
+  isLoading = false 
+}: InstanceModalProps) => {
+  
+  // Verificar se está conectado
+  const isConnected = instanceStatus?.status?.connected || false;
+  const isConnecting = instanceStatus?.instance?.status === 'connecting';
+
+  // Fechar modal automaticamente quando conectar
   useEffect(() => {
-    if (isOpen) {
-      // Simular geração de QR code
-      const mockQrCode = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0id2hpdGUiLz4KICA8IS0tIFNpbXVsYcOnw6NvIGRlIFFSIENvZGUgLS0+CiAgPHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIGZpbGw9ImJsYWNrIi8+CiAgPHJlY3QgeD0iNjAiIHk9IjIwIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIGZpbGw9ImJsYWNrIi8+CiAgPHJlY3QgeD0iMTAwIiB5PSIyMCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSJibGFjayIvPgogIDxyZWN0IHg9IjE0MCIgeT0iMjAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iYmxhY2siLz4KICA8cmVjdCB4PSIyMCIgeT0iNjAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iYmxhY2siLz4KICA8cmVjdCB4PSIxNDAiIHk9IjYwIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIGZpbGw9ImJsYWNrIi8+CiAgPHJlY3QgeD0iMjAiIHk9IjEwMCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSJibGFjayIvPgogIDxyZWN0IHg9IjYwIiB5PSIxMDAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iYmxhY2siLz4KICA8cmVjdCB4PSIxNDAiIHk9IjEwMCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSJibGFjayIvPgogIDxyZWN0IHg9IjIwIiB5PSIxNDAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iYmxhY2siLz4KICA8cmVjdCB4PSI2MCIgeT0iMTQwIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIGZpbGw9ImJsYWNrIi8+CiAgPHJlY3QgeD0iMTAwIiB5PSIxNDAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iYmxhY2siLz4KICA8cmVjdCB4PSIxNDAiIHk9IjE0MCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSJibGFjayIvPgo8L3N2Zz4=';
-      setQrCode(mockQrCode);
-      setIsConnected(false);
-
-      // Simular conexão após 5 segundos (remover quando integrar com backend real)
+    if (isConnected) {
       const timer = setTimeout(() => {
-        setIsConnected(true);
-      }, 5000);
-
+        onClose();
+      }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isConnected, onClose]);
 
   if (!isOpen) return null;
 
@@ -49,6 +52,7 @@ const InstanceModal = ({ isOpen, onClose, onConfirm, isLoading = false }: Instan
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition"
+            disabled={isLoading}
           >
             <X size={24} />
           </button>
@@ -56,7 +60,23 @@ const InstanceModal = ({ isOpen, onClose, onConfirm, isLoading = false }: Instan
 
         {/* Content */}
         <div className="p-6">
-          {!isConnected ? (
+          {isConnected ? (
+            /* Sucesso - Conectado */
+            <div className="text-center py-8">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                <CheckCircle className="text-green-600" size={40} />
+              </div>
+              <h4 className="text-xl font-bold text-gray-900 mb-2">Conectado com sucesso!</h4>
+              <p className="text-gray-600 mb-2">
+                Sua instância está ativa e pronta para usar
+              </p>
+              {instanceStatus?.instance?.name && (
+                <p className="text-sm text-gray-500 mt-2">
+                  Conectado como: <strong>{instanceStatus.instance.name}</strong>
+                </p>
+              )}
+            </div>
+          ) : (
             <>
               {/* QR Code */}
               <div className="flex flex-col items-center mb-6">
@@ -64,20 +84,24 @@ const InstanceModal = ({ isOpen, onClose, onConfirm, isLoading = false }: Instan
                   {qrCode ? (
                     <img 
                       src={qrCode} 
-                      alt="QR Code" 
+                      alt="QR Code WhatsApp" 
                       className="w-64 h-64"
                     />
                   ) : (
-                    <div className="w-64 h-64 flex items-center justify-center bg-gray-100 rounded-lg">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                    <div className="w-64 h-64 flex flex-col items-center justify-center bg-gray-100 rounded-lg">
+                      <RefreshCw className="animate-spin text-green-600 mb-2" size={32} />
+                      <p className="text-sm text-gray-600">Gerando QR Code...</p>
                     </div>
                   )}
                 </div>
 
-                <div className="animate-pulse flex items-center gap-2 text-sm text-gray-600">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Aguardando leitura do QR Code...</span>
-                </div>
+                {/* Status */}
+                {isConnecting && (
+                  <div className="animate-pulse flex items-center gap-2 text-sm text-gray-600">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                    <span>Aguardando leitura do QR Code...</span>
+                  </div>
+                )}
               </div>
 
               {/* Instruções */}
@@ -116,27 +140,21 @@ const InstanceModal = ({ isOpen, onClose, onConfirm, isLoading = false }: Instan
                   <strong>⚠️ Atenção:</strong> Mantenha seu celular com você. Não compartilhe este QR code com ninguém.
                 </p>
               </div>
+
+              {/* Informações da Instância */}
+              {instanceStatus?.instance && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-600">
+                    <strong>Status:</strong> {instanceStatus.instance.status}
+                  </p>
+                  {instanceStatus.instance.lastDisconnectReason && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      <strong>Última desconexão:</strong> {instanceStatus.instance.lastDisconnectReason}
+                    </p>
+                  )}
+                </div>
+              )}
             </>
-          ) : (
-            /* Sucesso */
-            <div className="text-center py-8">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="text-green-600" size={40} />
-              </div>
-              <h4 className="text-xl font-bold text-gray-900 mb-2">Conectado com sucesso!</h4>
-              <p className="text-gray-600 mb-6">
-                Sua instância está ativa e pronta para usar
-              </p>
-              <button
-                onClick={() => {
-                  onConfirm();
-                  onClose();
-                }}
-                className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-semibold"
-              >
-                Continuar
-              </button>
-            </div>
           )}
         </div>
 
@@ -149,13 +167,6 @@ const InstanceModal = ({ isOpen, onClose, onConfirm, isLoading = false }: Instan
               className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-semibold disabled:opacity-50"
             >
               Cancelar
-            </button>
-            <button
-              onClick={onConfirm}
-              disabled={isLoading || !isConnected}
-              className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Conectando...' : 'Confirmar'}
             </button>
           </div>
         )}

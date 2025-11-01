@@ -1,13 +1,16 @@
-// src/components/layout/Header/index.tsx
+// src/components/layout/Header/index.tsx - ATUALIZADO COM INTEGRAÇÃO REAL
 import { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../store';
 import { Bell, ChevronDown, Power, Settings, User, LogOut } from 'lucide-react';
 import InstanceModal from './InstanceModal';
 import ConfirmModal from './ConfirmModal';
-import { useConnectInstanceMutation, useDisconnectInstanceMutation, useGetInstanceStatusQuery } from '../../../services/uzapiApi';
+import { 
+  useConnectInstanceMutation, 
+  useDisconnectInstanceMutation, 
+  useGetInstanceStatusQuery 
+} from '../../../services/uzapiApi';
 
-// Mapeamento de títulos por módulo
 const MODULE_TITLES: Record<string, { title: string; subtitle: string }> = {
   dashboard: {
     title: 'Dashboard',
@@ -37,20 +40,27 @@ const MODULE_TITLES: Record<string, { title: string; subtitle: string }> = {
 
 const Header = () => {
   const activeModule = useSelector((state: RootState) => state.moduleActive.activeModule);
-  const { data: instanceStatus } = useGetInstanceStatusQuery();
-  console.log('Status da Instância:', instanceStatus);
-
   const user = useSelector((state: RootState) => state.auth.user);
   
+  // Estados locais
   const [showMenu, setShowMenu] = useState(false);
   const [showInstanceModal, setShowInstanceModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [instanceActive, setInstanceActive] = useState(false);
+  const [qrCodeData, setQrCodeData] = useState<string>('');
   
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // RTK Query Hooks
+  const { data: instanceStatus, refetch } = useGetInstanceStatusQuery(undefined, {
+    pollingInterval: 5000, // Polling a cada 5 segundos
+  });
+  
   const [connectInstance, { isLoading: isConnecting }] = useConnectInstanceMutation();
   const [disconnectInstance, { isLoading: isDisconnecting }] = useDisconnectInstanceMutation();
+
+  // Verificar se a instância está ativa
+  const instanceActive = instanceStatus?.status?.connected || false;
+  const instanceConnecting = instanceStatus?.instance?.status === 'connecting';
 
   // Fechar menu ao clicar fora
   useEffect(() => {
@@ -82,9 +92,26 @@ const Header = () => {
   };
 
   // Handler para ativar instância
-  const handleActivateInstance = () => {
+  const handleActivateInstance = async () => {
     setShowMenu(false);
-    setShowInstanceModal(true);
+    
+    try {
+      const response = await connectInstance().unwrap();
+      console.log('✅ Resposta da conexão:', response);
+      
+      // Se retornar QR code, salvar e abrir modal
+      if (response.instance.qrcode) {
+        setQrCodeData(response.instance.qrcode);
+        setShowInstanceModal(true);
+      }
+      
+      // Se já estiver conectado
+      if (response.connected && response.loggedIn) {
+        console.log('✅ Instância já conectada!');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao ativar instância:', error);
+    }
   };
 
   // Handler para desativar instância
@@ -97,25 +124,53 @@ const Header = () => {
   const confirmDeactivation = async () => {
     try {
       await disconnectInstance().unwrap();
-      setInstanceActive(false);
       setShowConfirmModal(false);
       console.log('✅ Instância desativada com sucesso');
+      refetch(); // Forçar atualização do status
     } catch (error) {
       console.error('❌ Erro ao desativar instância:', error);
     }
   };
 
-  // Confirmar ativação (após scan do QR code)
-  const confirmActivation = async () => {
-    try {
-      await connectInstance().unwrap();
-      setInstanceActive(true);
-      setShowInstanceModal(false);
-      console.log('✅ Instância ativada com sucesso');
-    } catch (error) {
-      console.error('❌ Erro ao ativar instância:', error);
-    }
+  // Fechar modal e atualizar status
+  const handleCloseInstanceModal = () => {
+    setShowInstanceModal(false);
+    setQrCodeData('');
+    refetch(); // Atualizar status ao fechar
   };
+
+  // Determinar cor e texto do status
+  const getStatusDisplay = () => {
+    if (instanceActive) {
+      return {
+        color: 'bg-green-100',
+        dotColor: 'bg-green-500',
+        textColor: 'text-green-700',
+        text: 'Agente Ativo',
+        animate: true
+      };
+    }
+    
+    if (instanceConnecting) {
+      return {
+        color: 'bg-yellow-100',
+        dotColor: 'bg-yellow-500',
+        textColor: 'text-yellow-700',
+        text: 'Conectando...',
+        animate: true
+      };
+    }
+    
+    return {
+      color: 'bg-gray-100',
+      dotColor: 'bg-gray-400',
+      textColor: 'text-gray-700',
+      text: 'Agente Inativo',
+      animate: false
+    };
+  };
+
+  const statusDisplay = getStatusDisplay();
 
   return (
     <>
@@ -129,10 +184,10 @@ const Header = () => {
         {/* Ações e Perfil */}
         <div className="flex items-center gap-4">
           {/* Status da Instância */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-green-100 rounded-full">
-            <div className={`w-2 h-2 rounded-full ${instanceActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
-            <span className={`font-semibold text-sm ${instanceActive ? 'text-green-700' : 'text-gray-700'}`}>
-              {instanceActive ? 'Agente Ativo' : 'Agente Inativo'}
+          <div className={`flex items-center gap-2 px-4 py-2 ${statusDisplay.color} rounded-full`}>
+            <div className={`w-2 h-2 rounded-full ${statusDisplay.dotColor} ${statusDisplay.animate ? 'animate-pulse' : ''}`}></div>
+            <span className={`font-semibold text-sm ${statusDisplay.textColor}`}>
+              {statusDisplay.text}
             </span>
           </div>
 
@@ -170,10 +225,7 @@ const Header = () => {
                 {/* Menu Items */}
                 <div className="py-2">
                   <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      // Navegar para perfil
-                    }}
+                    onClick={() => setShowMenu(false)}
                     className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 transition text-left"
                   >
                     <User size={18} className="text-gray-600" />
@@ -181,20 +233,16 @@ const Header = () => {
                   </button>
 
                   <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      // Navegar para configurações
-                    }}
+                    onClick={() => setShowMenu(false)}
                     className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 transition text-left"
                   >
                     <Settings size={18} className="text-gray-600" />
                     <span className="text-gray-700">Configurações</span>
                   </button>
 
-                  {/* Gerenciar Instância */}
                   <div className="border-t border-gray-200 my-2"></div>
                   
-                  {instanceActive ? (
+                  {instanceActive || instanceConnecting ? (
                     <button
                       onClick={handleDeactivateInstance}
                       className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 transition text-left"
@@ -215,10 +263,7 @@ const Header = () => {
                   <div className="border-t border-gray-200 my-2"></div>
 
                   <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      // Fazer logout
-                    }}
+                    onClick={() => setShowMenu(false)}
                     className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-100 transition text-left"
                   >
                     <LogOut size={18} className="text-gray-600" />
@@ -234,8 +279,9 @@ const Header = () => {
       {/* Modal de Ativação (QR Code) */}
       <InstanceModal
         isOpen={showInstanceModal}
-        onClose={() => setShowInstanceModal(false)}
-        onConfirm={confirmActivation}
+        onClose={handleCloseInstanceModal}
+        qrCode={qrCodeData}
+        instanceStatus={instanceStatus}
         isLoading={isConnecting}
       />
 
