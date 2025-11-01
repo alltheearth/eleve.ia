@@ -5,7 +5,7 @@ import type { RootState } from '../../../store';
 import { Bell, ChevronDown, Power, Settings, User, LogOut } from 'lucide-react';
 import InstanceModal from './InstanceModal';
 import ConfirmModal from './ConfirmModal';
-import { useConnectInstanceMutation, useDisconnectInstanceMutation } from '../../../services/uzapiApi';
+import { useConnectInstanceMutation, useDisconnectInstanceMutation, useGetInstanceStatusQuery } from '../../../services/uzapiApi';
 
 // Mapeamento de títulos por módulo
 const MODULE_TITLES: Record<string, { title: string; subtitle: string }> = {
@@ -37,6 +37,9 @@ const MODULE_TITLES: Record<string, { title: string; subtitle: string }> = {
 
 const Header = () => {
   const activeModule = useSelector((state: RootState) => state.moduleActive.activeModule);
+  const { data: instanceStatus } = useGetInstanceStatusQuery();
+  console.log('Status da Instância:', instanceStatus);
+
   const user = useSelector((state: RootState) => state.auth.user);
   
   const [showMenu, setShowMenu] = useState(false);
@@ -93,7 +96,7 @@ const Header = () => {
   // Confirmar desativação
   const confirmDeactivation = async () => {
     try {
-      await disconnectInstance({ instanceUrl: 'default' }).unwrap();
+      await disconnectInstance().unwrap();
       setInstanceActive(false);
       setShowConfirmModal(false);
       console.log('✅ Instância desativada com sucesso');
@@ -105,7 +108,7 @@ const Header = () => {
   // Confirmar ativação (após scan do QR code)
   const confirmActivation = async () => {
     try {
-      await connectInstance({ instanceUrl: 'default' }).unwrap();
+      await connectInstance().unwrap();
       setInstanceActive(true);
       setShowInstanceModal(false);
       console.log('✅ Instância ativada com sucesso');

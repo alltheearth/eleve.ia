@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { useCurrentSchool } from '../hooks/useCurrentSchool';
 
 const API_URL = 'https://eleve.uazapi.com';
 
@@ -6,8 +7,9 @@ export const uzapiApi = createApi({
   reducerPath: 'uzapiApi',
   baseQuery: fetchBaseQuery({
     baseUrl: API_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any)?.auth?.token;
+    prepareHeaders: (headers) => {
+      const school = useCurrentSchool()
+      const token = school.currentSchool?.token_mensagens;
       if (token) {
         headers.set('Authorization', `Token ${token}`);
       }
@@ -23,17 +25,17 @@ export const uzapiApi = createApi({
     }),
 
     // Conectar instância
-    connectInstance: builder.mutation<any, { instanceUrl: string }>({
+    connectInstance: builder.mutation<any, void>({
       query: (body) => ({
-        url: '/instance/disconnect/',
+        url: '/instance/connect/',
         method: 'POST',
         body,
       }),
     }),
      // Conectar instância
-    disconnectInstance: builder.mutation<any, { instanceUrl: string }>({
+    disconnectInstance: builder.mutation<any, void>({
       query: (body) => ({
-        url: '/instance/connect/',
+        url: '/instance/disconnect/',
         method: 'POST',
         body,
       }),

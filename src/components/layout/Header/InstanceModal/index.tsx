@@ -2,6 +2,7 @@
 import { X, Smartphone, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
+
 interface InstanceModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -12,7 +13,6 @@ interface InstanceModalProps {
 const InstanceModal = ({ isOpen, onClose, onConfirm, isLoading = false }: InstanceModalProps) => {
   const [qrCode, setQrCode] = useState<string>('');
   const [isConnected, setIsConnected] = useState(false);
-
   // Mock QR Code - futuramente será substituído pelo código real
   useEffect(() => {
     if (isOpen) {

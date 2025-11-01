@@ -30,6 +30,7 @@ interface School {
   };
   criado_em: string;
   atualizado_em: string;
+  token_mensagens: string;
 }
 
 interface SchoolResponse {
