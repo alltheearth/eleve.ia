@@ -1,7 +1,6 @@
-// src/services/uzapiApi.ts - API COM TOKEN CORRETO
+// src/services/uzapiApi.ts - API COM ACESSO CORRETO AO REDUX
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { RootState } from '../store';
-import type { SchoolResponse } from './schoolApi';
 
 const API_URL = 'https://eleve.uazapi.com';
 
@@ -56,27 +55,46 @@ export const uzapiApi = createApi({
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
       
-      // Pegar token_mensagens da primeira escola
+      // CORRETO: Acessar o estado do schoolApi através das queries
       const schoolApiState = state.schoolApi;
-      const schoolsQuery: SchoolResponse = schoolApiState?.queries?.['getSchools'];
-      console.log(schoolsQuery)
-      const schools = schoolsQuery?.data?.results;
-      console.log(schools)
       
-      if (schools && schools.length > 0) {
-        const token = schools[0].token_mensagens;
-        if (token) {
-          // Formato correto: Token (não Bearer)
-          headers.set('Authorization', `Token ${token}`);
-          console.log('🔑 Token enviado:', token);
+      // Buscar a query específica de getSchools
+      const getSchoolsQueryState = schoolApiState?.queries?.['getSchools(undefined)'];
+      
+      console.log('🔍 schoolApiState:', schoolApiState);
+      console.log('🔍 getSchoolsQueryState:', getSchoolsQueryState);
+      
+      let token: string | null = null;
+      
+      // Verificar se a query existe e tem dados
+      if (getSchoolsQueryState && getSchoolsQueryState.status === 'fulfilled') {
+        const data = getSchoolsQueryState.data as any;
+        const schools = data?.results;
+        
+        console.log('🏫 Schools encontradas:', schools);
+        
+        if (schools && schools.length > 0) {
+          token = schools[0].token_mensagens;
+          console.log('🔑 Token encontrado:', token);
         } else {
-          console.warn('⚠️ Escola sem token_mensagens');
+          console.warn('⚠️ Array de escolas vazio');
         }
       } else {
-        console.warn('⚠️ Nenhuma escola encontrada');
+        console.warn('⚠️ Query getSchools não encontrada ou não fulfilled');
+        console.log('Status da query:', getSchoolsQueryState?.status);
+      }
+      
+      // Se encontrou o token, adicionar ao header
+      if (token && token.trim() !== '') {
+        headers.set(`token`,token);
+        console.log('✅ Header Authorization configurado');
+        console.log(token)
+      } else {
+        console.error('❌ Token não encontrado ou vazio');
       }
       
       headers.set('Content-Type', 'application/json');
+      headers.set('Accept', 'application/json');
       return headers;
     },
   }),

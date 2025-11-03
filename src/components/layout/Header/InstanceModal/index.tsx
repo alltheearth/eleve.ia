@@ -1,6 +1,5 @@
-// src/components/layout/Header/InstanceModal/index.tsx - ATUALIZADO COM QR CODE REAL
+// src/components/layout/Header/InstanceModal/index.tsx - CORRIGIDO SEM AUTO-CLOSE
 import { X, Smartphone, CheckCircle, RefreshCw } from 'lucide-react';
-import { useEffect } from 'react';
 import type { StatusResponse } from '../../../../services/uzapiApi';
 
 interface InstanceModalProps {
@@ -23,15 +22,8 @@ const InstanceModal = ({
   const isConnected = instanceStatus?.status?.connected || false;
   const isConnecting = instanceStatus?.instance?.status === 'connecting';
 
-  // Fechar modal automaticamente quando conectar
-  useEffect(() => {
-    if (isConnected) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [isConnected, onClose]);
+  // ❌ REMOVIDO: Auto-close quando conectar
+  // O Header agora é responsável por fechar o modal
 
   if (!isOpen) return null;
 
@@ -41,12 +33,22 @@ const InstanceModal = ({
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-              <Smartphone className="text-green-600" size={20} />
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              isConnected ? 'bg-green-100' : 'bg-green-100'
+            }`}>
+              {isConnected ? (
+                <CheckCircle className="text-green-600" size={20} />
+              ) : (
+                <Smartphone className="text-green-600" size={20} />
+              )}
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900">Ativar Instância</h3>
-              <p className="text-sm text-gray-600">Conecte seu WhatsApp</p>
+              <h3 className="text-xl font-bold text-gray-900">
+                {isConnected ? 'Conectado!' : 'Ativar Instância'}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {isConnected ? 'WhatsApp conectado com sucesso' : 'Conecte seu WhatsApp'}
+              </p>
             </div>
           </div>
           <button
@@ -96,7 +98,7 @@ const InstanceModal = ({
                 </div>
 
                 {/* Status */}
-                {isConnecting && (
+                {isConnecting && qrCode && (
                   <div className="animate-pulse flex items-center gap-2 text-sm text-gray-600">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
                     <span>Aguardando leitura do QR Code...</span>
@@ -159,17 +161,15 @@ const InstanceModal = ({
         </div>
 
         {/* Footer */}
-        {!isConnected && (
-          <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl">
-            <button
-              onClick={onClose}
-              disabled={isLoading}
-              className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-semibold disabled:opacity-50"
-            >
-              Cancelar
-            </button>
-          </div>
-        )}
+        <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl">
+          <button
+            onClick={onClose}
+            disabled={isLoading}
+            className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-semibold disabled:opacity-50"
+          >
+            {isConnected ? 'Fechar' : 'Cancelar'}
+          </button>
+        </div>
       </div>
     </div>
   );

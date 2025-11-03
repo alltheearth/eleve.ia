@@ -1,4 +1,4 @@
-// src/components/layout/Header/index.tsx - ATUALIZADO COM INTEGRAÇÃO REAL
+// src/components/layout/Header/index.tsx - CORRIGIDO COM POLLING
 import { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../store';
@@ -47,12 +47,15 @@ const Header = () => {
   const [showInstanceModal, setShowInstanceModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [qrCodeData, setQrCodeData] = useState<string>('');
+  const [isPolling, setIsPolling] = useState(false);
   
   const menuRef = useRef<HTMLDivElement>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // RTK Query Hooks
+  // RTK Query Hooks - Polling desabilitado por padrão
   const { data: instanceStatus, refetch } = useGetInstanceStatusQuery(undefined, {
-    pollingInterval: 5000, // Polling a cada 5 segundos
+    pollingInterval: 0, // Desabilitado por padrão
+    skip: false,
   });
   
   const [connectInstance, { isLoading: isConnecting }] = useConnectInstanceMutation();
@@ -74,6 +77,47 @@ const Header = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // ✅ POLLING MANUAL - Verificar status a cada 5 segundos quando modal estiver aberto
+  useEffect(() => {
+    if (isPolling && showInstanceModal) {
+      console.log('🔄 Iniciando polling manual...');
+      
+      // Fazer primeira verificação imediatamente
+      refetch();
+      
+      // Configurar intervalo de 5 segundos
+      pollingIntervalRef.current = setInterval(() => {
+        console.log('🔄 Verificando status da instância...');
+        refetch();
+      }, 5000);
+    } else {
+      // Limpar intervalo quando não estiver fazendo polling
+      if (pollingIntervalRef.current) {
+        console.log('⏹️ Parando polling');
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    }
+
+    // Cleanup
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [isPolling, showInstanceModal, refetch]);
+
+  // ✅ Detectar quando a instância conectou e fechar modal
+  useEffect(() => {
+    if (instanceActive && showInstanceModal && isPolling) {
+      console.log('✅ Instância conectada! Fechando modal em 2 segundos...');
+      
+      setTimeout(() => {
+        handleCloseInstanceModal();
+      }, 2000);
+    }
+  }, [instanceActive, showInstanceModal, isPolling]);
+
   // Obter título e subtítulo do módulo ativo
   const { title, subtitle } = MODULE_TITLES[activeModule] || { 
     title: 'Dashboard', 
@@ -91,11 +135,12 @@ const Header = () => {
     return 'AD';
   };
 
-  // Handler para ativar instância
+  // ✅ Handler para ativar instância - SEM FECHAR O MODAL
   const handleActivateInstance = async () => {
     setShowMenu(false);
     
     try {
+      console.log('🚀 Ativando instância...');
       const response = await connectInstance().unwrap();
       console.log('✅ Resposta da conexão:', response);
       
@@ -103,14 +148,13 @@ const Header = () => {
       if (response.instance.qrcode) {
         setQrCodeData(response.instance.qrcode);
         setShowInstanceModal(true);
-      }
-      
-      // Se já estiver conectado
-      if (response.connected && response.loggedIn) {
-        console.log('✅ Instância já conectada!');
+        setIsPolling(true); // ✅ Iniciar polling
+      } else {
+        console.warn('⚠️ Nenhum QR Code retornado');
       }
     } catch (error) {
       console.error('❌ Erro ao ativar instância:', error);
+      setIsPolling(false);
     }
   };
 
@@ -123,6 +167,7 @@ const Header = () => {
   // Confirmar desativação
   const confirmDeactivation = async () => {
     try {
+      console.log('🔌 Desativando instância...');
       await disconnectInstance().unwrap();
       setShowConfirmModal(false);
       console.log('✅ Instância desativada com sucesso');
@@ -132,11 +177,13 @@ const Header = () => {
     }
   };
 
-  // Fechar modal e atualizar status
+  // ✅ Fechar modal e parar polling
   const handleCloseInstanceModal = () => {
+    console.log('🚪 Fechando modal de instância');
     setShowInstanceModal(false);
     setQrCodeData('');
-    refetch(); // Atualizar status ao fechar
+    setIsPolling(false); // ✅ Parar polling
+    refetch(); // Atualizar status final
   };
 
   // Determinar cor e texto do status
