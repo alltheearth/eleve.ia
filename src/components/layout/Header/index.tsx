@@ -1,4 +1,4 @@
-// src/components/layout/Header/index.tsx - CORRIGIDO COM POLLING
+// src/components/layout/Header/index.tsx - CORRIGIDO COM loggedIn
 import { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../store';
@@ -61,8 +61,8 @@ const Header = () => {
   const [connectInstance, { isLoading: isConnecting }] = useConnectInstanceMutation();
   const [disconnectInstance, { isLoading: isDisconnecting }] = useDisconnectInstanceMutation();
 
-  // Verificar se a instância está ativa
-  const instanceActive = instanceStatus?.status?.connected || false;
+  // ✅ CORRIGIDO: Usar loggedIn ao invés de connected
+  const instanceActive = instanceStatus?.status?.loggedIn || false;
   const instanceConnecting = instanceStatus?.instance?.status === 'connecting';
 
   // Fechar menu ao clicar fora
@@ -87,7 +87,7 @@ const Header = () => {
       
       // Configurar intervalo de 5 segundos
       pollingIntervalRef.current = setInterval(() => {
-        console.log('🔄 Verificando status da instância...');
+        console.log('🔄 Verificando status da instância... (loggedIn:', instanceStatus?.status?.loggedIn, ')');
         refetch();
       }, 5000);
     } else {
@@ -107,10 +107,10 @@ const Header = () => {
     };
   }, [isPolling, showInstanceModal, refetch]);
 
-  // ✅ Detectar quando a instância conectou e fechar modal
+  // ✅ CORRIGIDO: Detectar quando efetivamente logado (não apenas conectado)
   useEffect(() => {
     if (instanceActive && showInstanceModal && isPolling) {
-      console.log('✅ Instância conectada! Fechando modal em 2 segundos...');
+      console.log('✅ Usuário efetivamente logado! Fechando modal em 2 segundos...');
       
       setTimeout(() => {
         handleCloseInstanceModal();

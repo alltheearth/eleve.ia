@@ -1,4 +1,4 @@
-// src/components/layout/Header/InstanceModal/index.tsx - CORRIGIDO SEM AUTO-CLOSE
+// src/components/layout/Header/InstanceModal/index.tsx - CORRIGIDO COM loggedIn
 import { X, Smartphone, CheckCircle, RefreshCw } from 'lucide-react';
 import type { StatusResponse } from '../../../../services/uzapiApi';
 
@@ -18,12 +18,10 @@ const InstanceModal = ({
   isLoading = false 
 }: InstanceModalProps) => {
   
-  // Verificar se está conectado
-  const isConnected = instanceStatus?.status?.connected || false;
+  // ✅ CORRIGIDO: Usar loggedIn ao invés de connected
+  const isConnected = instanceStatus?.status?.loggedIn || false;
+  console.log(instanceStatus?.status)
   const isConnecting = instanceStatus?.instance?.status === 'connecting';
-
-  // ❌ REMOVIDO: Auto-close quando conectar
-  // O Header agora é responsável por fechar o modal
 
   if (!isOpen) return null;
 
@@ -63,7 +61,7 @@ const InstanceModal = ({
         {/* Content */}
         <div className="p-6">
           {isConnected ? (
-            /* Sucesso - Conectado */
+            /* Sucesso - Efetivamente Logado */
             <div className="text-center py-8">
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                 <CheckCircle className="text-green-600" size={40} />
@@ -97,7 +95,7 @@ const InstanceModal = ({
                   )}
                 </div>
 
-                {/* Status */}
+                {/* Status - Aguardando Scan */}
                 {isConnecting && qrCode && (
                   <div className="animate-pulse flex items-center gap-2 text-sm text-gray-600">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
