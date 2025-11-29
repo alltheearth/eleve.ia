@@ -1,127 +1,76 @@
+import { NavLink } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../../store';
 import {
-  BookOpen,
   Home,
-  LogOut,
-  Menu,
-  X,
-  type LucideIcon,
-  MessageSquare,
   Users,
+  UserPlus,
   Calendar,
-} from "lucide-react";
-import { useState, type FC, type JSX } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "../../../store";
-import { setActiveModule } from "../../../Feature/ModuleActiveSlice";
-import { logout } from "../../../Feature/AuthSlice";
+  BookOpen,
+  FileText,
+  BarChart3,
+  Settings,
+} from 'lucide-react';
 
-interface NavItemProps {
-  icon: LucideIcon;
-  label: string;
-  sidebarOpen: boolean;
-  active?: boolean;
-  onClick?: () => void;
-}
+const Sidebar = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
 
-interface MenuItem {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-}
-
-const Sidebar: FC = () => {
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
-  const dispatch = useDispatch<AppDispatch>();
-  const activeModule = useSelector(
-    (state: RootState) => state.moduleActive.activeModule
-  );
-
-  const menuItems: MenuItem[] = [
-    { id: "dashboard", label: "Dashboard", icon: Home },
-    { id: "information", label: "Informações da Escola", icon: BookOpen },
-    { id: 'calendar', label: 'Calendário Escolar', icon: Calendar},
-    // {id: 'campaigns', label: 'Campanhas', icon: Goal},
-    // { id: "documentos", label: "Documentos", icon: FileText },
-    {id: "contatos", label: "Contatos", icon: Users}, 
-    { id: "faqs", label: "FAQs", icon: MessageSquare },
-    { id: "leads", label: "Leads", icon: Users },
-    // { id: "configuracoes", label: "Configurações", icon: Settings },
-    // { id: "analytics", label: "Analytics", icon: BarChart3 },
+  const menuItems = [
+    { icon: Home, label: 'Dashboard', path: '/dashboard' },
+    { icon: Users, label: 'Leads', path: '/leads' },
+    { icon: UserPlus, label: 'Contatos', path: '/contatos' },
+    { icon: Calendar, label: 'Eventos', path: '/eventos' },
+    { icon: BookOpen, label: 'FAQs', path: '/faqs' },
+    { icon: FileText, label: 'Documentos', path: '/documentos' },
+    { icon: BarChart3, label: 'Relatórios', path: '/relatorios' },
+    { icon: Settings, label: 'Configurações', path: '/configuracoes' },
   ];
 
-  const handleNavClick = (moduleId: string): void => {
-    dispatch(setActiveModule(moduleId));
-  };
-
-  const handleLogout = (): void => {
-    // Implementar lógica de logout aqui
-    dispatch(logout());
-  };
-
   return (
-    <aside
-      className={`${
-        sidebarOpen ? "w-64" : "w-20"
-      } bg-gray-900 text-white transition-all duration-300 flex flex-col shadow-lg`}
-    >
-      <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-        {sidebarOpen && <span className="font-bold text-xl">🎓 ELEVE.IA</span>}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="hover:bg-gray-800 p-1 rounded transition"
-          aria-label="Toggle sidebar"
-        >
-          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+    <div className="w-64 bg-gray-900 text-white h-screen fixed left-0 top-0 flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-700">
+        <h1 className="text-xl font-bold">EleveAI</h1>
+        <p className="text-xs text-gray-400">
+          {user?.perfil?.escola_nome || 'Carregando...'}
+        </p>
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-3 space-y-2">
-        {menuItems.map((item) => (
-          <NavItem
-            key={item.id}
-            icon={item.icon}
-            label={item.label}
-            sidebarOpen={sidebarOpen}
-            active={activeModule === item.id}
-            onClick={() => handleNavClick(item.id)}
-          />
-        ))}
+      {/* Menu */}
+      <nav className="flex-1 p-4 overflow-y-auto">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded mb-1 transition-colors ${
+                  isActive
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-300 hover:bg-gray-800'
+                }`
+              }
+            >
+              <Icon size={20} />
+              <span>{item.label}</span>
+            </NavLink>
+          );
+        })}
       </nav>
 
-      <div className="p-3 border-t border-gray-700">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 transition"
-          aria-label="Logout"
-        >
-          <LogOut size={20} />
-          {sidebarOpen && <span className="text-sm">Logout</span>}
-        </button>
+      {/* Footer - User Info */}
+      <div className="p-4 border-t border-gray-700">
+        <div className="text-sm">
+          <p className="font-medium">{user?.first_name} {user?.last_name}</p>
+          <p className="text-xs text-gray-400">
+            {user?.perfil?.tipo_display || 'Usuário'}
+          </p>
+        </div>
       </div>
-    </aside>
+    </div>
   );
 };
 
 export default Sidebar;
-
-// Componente NavItem
-const NavItem: FC<NavItemProps> = ({
-  icon: Icon,
-  label,
-  sidebarOpen,
-  active = false,
-  onClick,
-}): JSX.Element => {
-  return (
-    <button 
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-        active ? "bg-blue-600 text-white" : "text-gray-300 hover:bg-gray-800"
-      }`}
-      aria-label={label}
-    >
-      <Icon size={20} />
-      {sidebarOpen && <span className="text-sm">{label}</span>}
-    </button>
-  );
-};
